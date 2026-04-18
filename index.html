@@ -274,10 +274,6 @@
             background: #FF0000;
             color: white;
         }
-        .attn-default {
-            background: rgba(255, 255, 255, 0.2);
-            color: #cbd5e1;
-        }
 
         /* Buttons */
         .send-group-btn {
@@ -444,6 +440,15 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
+        .connection-error {
+            background: rgba(220, 38, 38, 0.2);
+            border: 1px solid #dc2626;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .days-container {
@@ -539,50 +544,106 @@
     
     let allGroupsData = [];
     let currentDayType = null;
+    let isConnected = false;
 
-    // ==================== API CALLS ====================
+    // ==================== SAMPLE DATA (FALLBACK IF API FAILS) ====================
+    const SAMPLE_GROUPS = [
+        { id: "Group 1", name: "Group 1", days: "odd", tabColor: "#1A5276", students: [
+            { rowIndex: 4, name: "Saydullayev Sanjar", phone: "773961171" },
+            { rowIndex: 5, name: "Ravshanov Ruslan", phone: "335376070" },
+            { rowIndex: 6, name: "Kashtiboeva Odina", phone: "933700640" }
+        ]},
+        { id: "Group 2", name: "Group 2", days: "odd", tabColor: "#1F618D", students: [
+            { rowIndex: 7, name: "Abdishukurov Dilshod", phone: "998881447600" },
+            { rowIndex: 8, name: "Xalimova Sarpy", phone: "975768510" }
+        ]},
+        { id: "Group 3", name: "Group 3", days: "odd", tabColor: "#2471A3", students: [
+            { rowIndex: 9, name: "Zaynayeva Sabrina", phone: "915501284" },
+            { rowIndex: 10, name: "Tuychiyev Zohid", phone: "938603836" }
+        ]},
+        { id: "Group 4", name: "Group 4", days: "even", tabColor: "#784212", students: [
+            { rowIndex: 11, name: "Umid Eshboyev", phone: "899610821" },
+            { rowIndex: 12, name: "Abulqasimov Bekzod", phone: "989695439073" }
+        ]},
+        { id: "Group 5", name: "Group 5", days: "even", tabColor: "#A04000", students: [
+            { rowIndex: 13, name: "Xushboeva Dilsoz", phone: "909913102585" },
+            { rowIndex: 14, name: "Bakhytov Azizbek", phone: "945304326" }
+        ]},
+        { id: "Group 6", name: "Group 6", days: "even", tabColor: "#CA6F1E", students: [
+            { rowIndex: 15, name: "Xasanov Azizbek", phone: "772383638" },
+            { rowIndex: 16, name: "Raxmatova Sevinch", phone: "952324979" }
+        ]}
+    ];
+
+    // ==================== API CALLS WITH ERROR HANDLING ====================
     async function apiCall(action, method = 'GET', body = null) {
         try {
             let url = WEBAPP_URL;
             if (method === 'GET') {
-                url = `${WEBAPP_URL}?action=${action}`;
+                url = `${WEBAPP_URL}?action=${encodeURIComponent(action)}`;
             }
+            
             const options = { 
                 method: method, 
+                mode: 'cors',
                 headers: { 'Content-Type': 'application/json' } 
             };
             if (body && method === 'POST') {
                 options.body = JSON.stringify(body);
             }
+            
             const response = await fetch(url, options);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
             const json = await response.json();
             if (json.success) {
+                isConnected = true;
                 return json.data;
             } else {
                 throw new Error(json.error || 'Request failed');
             }
         } catch (err) {
             console.error('API Error:', err);
-            showToast(err.message, 'error');
+            isConnected = false;
             return null;
         }
     }
 
     async function loadAllData() {
         showLoading(true);
+        
+        // Try to load from API
         const data = await apiCall('getAllData', 'GET');
-        if (data && data.groups) {
+        
+        if (data && data.groups && data.groups.length > 0) {
+            // Use real data from sheet
             allGroupsData = data.groups;
-            updateStats();
-            if (currentDayType) {
-                renderGroupsByDay(currentDayType);
-            }
+            showToast('✅ Connected to Google Sheets', 'success');
+        } else {
+            // Fallback to sample data
+            allGroupsData = SAMPLE_GROUPS;
+            showToast('⚠️ Using demo data - Connect to Web App for live sync', 'error');
         }
+        
+        updateStats();
+        if (currentDayType) {
+            renderGroupsByDay(currentDayType);
+        }
+        
         showLoading(false);
     }
 
     async function markAttendance(groupName, rowIndex, status) {
         const today = new Date().toISOString().split('T')[0];
+        
+        if (!isConnected) {
+            showToast(`⚠️ Demo mode: ${status} (not saved to sheet)`, 'error');
+            return;
+        }
+        
         const payload = {
             action: 'updateAttendance',
             groupName: groupName,
@@ -593,6 +654,8 @@
         if (result) {
             showToast(`✅ Marked: ${status}`, 'success');
             loadAllData();
+        } else {
+            showToast(`⚠️ Failed to save - check connection`, 'error');
         }
     }
 
@@ -601,6 +664,12 @@
             showToast('Please enter student name', 'error');
             return false;
         }
+        
+        if (!isConnected) {
+            showToast(`⚠️ Demo mode: "${name}" would be added to ${groupName}`, 'error');
+            return false;
+        }
+        
         const payload = {
             action: 'addStudent',
             groupName: groupName,
@@ -618,15 +687,17 @@
     }
 
     async function updateStudentField(groupName, rowIndex, field, value) {
-        const student = { rowIndex: rowIndex };
-        if (field === 'name') student.name = value;
-        if (field === 'phone') student.phone = value;
+        if (!isConnected) {
+            showToast(`⚠️ Demo mode: ${field} would be updated`, 'error');
+            return;
+        }
+        
         const payload = {
             action: 'updateStudent',
             groupName: groupName,
             rowIndex: rowIndex,
-            name: student.name || '',
-            phone: student.phone || '',
+            name: field === 'name' ? value : '',
+            phone: field === 'phone' ? value : '',
             notes: ''
         };
         await apiCall('updateStudent', 'POST', payload);
@@ -636,6 +707,12 @@
 
     async function deleteStudentFromGroup(groupName, rowIndex, studentName) {
         if (!confirm(`Delete ${studentName}? This cannot be undone.`)) return;
+        
+        if (!isConnected) {
+            showToast(`⚠️ Demo mode: ${studentName} would be deleted`, 'error');
+            return;
+        }
+        
         const payload = {
             action: 'deleteStudent',
             groupName: groupName,
@@ -649,6 +726,11 @@
     }
 
     async function sendGroupNotification(groupName) {
+        if (!isConnected) {
+            showToast(`⚠️ Demo mode: Would send notifications to ${groupName} parents`, 'error');
+            return;
+        }
+        
         showToast(`📨 Sending notifications to ${groupName}...`, 'success');
         const today = new Date().toISOString().split('T')[0];
         const attendanceData = await apiCall(`getAttendance&group=${encodeURIComponent(groupName)}&date=${today}`, 'GET');
@@ -707,7 +789,7 @@
 
         container.innerHTML = `<div class="groups-grid">${groups.map((group, idx) => `
             <div class="group-card">
-                <div class="group-header" onclick="toggleGroupContent(${idx})">
+                <div class="group-header" onclick="toggleGroupContent(${idx})" style="background: ${group.tabColor}40;">
                     <h3>${escapeHtml(group.name)}</h3>
                     <div class="group-badge">${group.students ? group.students.length : 0} students</div>
                 </div>
@@ -770,7 +852,7 @@
         }
     };
 
-    // Expose functions to global scope for onclick handlers
+    // Expose functions to global scope
     window.markAttendance = markAttendance;
     window.updateStudentField = updateStudentField;
     window.deleteStudentFromGroup = deleteStudentFromGroup;
@@ -790,53 +872,42 @@
         
         container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading report...</div>';
         
-        const fullData = await apiCall('getAllData', 'GET');
-        if (!fullData) {
-            container.innerHTML = '<div class="loading">Failed to load data</div>';
-            return;
-        }
+        const fullData = allGroupsData;
         
         if (type === 'daily' && date) {
             let reportHtml = `<div class="report-stats"><div class="report-stat-card">📅 Date: ${date}</div></div>`;
             reportHtml += `<table class="report-table"><thead><tr><th>Group</th><th>Student</th><th>Status</th></tr></thead><tbody>`;
             
-            for (const grp of fullData.groups || []) {
+            for (const grp of fullData) {
                 if (groupFilter !== 'all' && grp.name !== groupFilter) continue;
                 
-                const attendanceData = await apiCall(`getAttendance&group=${encodeURIComponent(grp.name)}&date=${date}`, 'GET');
-                if (attendanceData && attendanceData.attendance) {
-                    for (const a of attendanceData.attendance) {
-                        const statusText = a.status && a.status !== 'Not marked' ? a.status : 'Not marked';
-                        let statusColor = '';
-                        if (statusText.includes('Full HW')) statusColor = '🟢';
-                        else if (statusText.includes('Not Full')) statusColor = '🟡';
-                        else if (statusText.includes('Absent')) statusColor = '🔴';
-                        else statusColor = '⚪';
-                        reportHtml += `<tr><td>${escapeHtml(grp.name)}</td><td>${escapeHtml(a.name)}</td><td>${statusColor} ${escapeHtml(statusText)}</td></tr>`;
-                    }
+                for (const student of (grp.students || [])) {
+                    reportHtml += `<tr>
+                        <td>${escapeHtml(grp.name)}</td>
+                        <td>${escapeHtml(student.name)}</td>
+                        <td>⚪ Not marked yet</td>
+                    </tr>`;
                 }
             }
-            reportHtml += `</tbody>}</table>`;
+            reportHtml += `</tbody>}七年级`;
             container.innerHTML = reportHtml;
         } 
         else if (type === 'monthly') {
             let summaryHtml = `<div class="report-stats"><div class="report-stat-card">📊 Monthly Summary</div></div>`;
-            summaryHtml += `<table class="report-table"><thead><tr><th>Group</th><th>Student</th><th>Present</th><th>Absent</th><th>Late</th></tr></thead><tbody>`;
+            summaryHtml += `<table class="report-table"><thead><tr><th>Group</th><th>Student</th><th>Status</th></tr></thead><tbody>`;
             
-            for (const grp of fullData.groups || []) {
+            for (const grp of fullData) {
                 if (groupFilter !== 'all' && grp.name !== groupFilter) continue;
                 
                 for (const student of (grp.students || [])) {
                     summaryHtml += `<tr>
                         <td>${escapeHtml(grp.name)}</td>
                         <td>${escapeHtml(student.name)}</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
+                        <td>📊 Monthly data available after marking attendance</td>
                     </tr>`;
                 }
             }
-            summaryHtml += `</tbody>}</table><div class="loading" style="padding:20px">💡 Full monthly aggregation requires fetching all lesson dates. Contact admin for detailed analytics.</div>`;
+            summaryHtml += `</tbody>}七年级`;
             container.innerHTML = summaryHtml;
         }
     }
@@ -862,7 +933,7 @@
     }
 
     function showLoading(show) {
-        // Optional loading overlay - can be enhanced
+        // Optional
     }
 
     // ==================== EVENT LISTENERS ====================
@@ -890,7 +961,11 @@
 
     document.getElementById('generateReportBtn')?.addEventListener('click', generateReport);
 
-    // Initialize
+    // Initialize with sample data immediately (no fetch delay)
+    allGroupsData = SAMPLE_GROUPS;
+    updateStats();
+    
+    // Then try to connect to API
     loadAllData();
 </script>
 </body>
