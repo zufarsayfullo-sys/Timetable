@@ -161,6 +161,8 @@
             border-radius: 20px;
             overflow-x: auto;
             border: 1px solid rgba(255, 255, 255, 0.08);
+            max-height: 70vh;
+            overflow-y: auto;
         }
         .attendance-table {
             width: 100%;
@@ -169,7 +171,7 @@
             min-width: 800px;
         }
         .attendance-table th {
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             padding: 14px 10px;
             text-align: center;
             font-weight: 600;
@@ -177,6 +179,7 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             position: sticky;
             top: 0;
+            z-index: 10;
         }
         .attendance-table td {
             padding: 10px 8px;
@@ -189,6 +192,7 @@
             background: rgba(0, 0, 0, 0.3);
             position: sticky;
             left: 0;
+            z-index: 5;
         }
         .attn-btn {
             padding: 5px 10px;
@@ -391,7 +395,13 @@
             const json = await response.json();
             
             if (json.success) {
-                return json.data || json;
+                // Handle the data structure from your Web App
+                if (json.data && json.data.groups) {
+                    return json.data;
+                } else if (json.groups) {
+                    return json;
+                }
+                return json;
             } else {
                 throw new Error(json.error || 'Request failed');
             }
@@ -408,38 +418,23 @@
         const result = await callAPI('getAllData');
         
         if (result && result.groups && result.groups.length > 0) {
-            allGroups = result.groups;
+            // Filter out rows that have "Present + Full HW" as name (those are header rows)
+            allGroups = result.groups.map(group => ({
+                ...group,
+                students: group.students.filter(s => 
+                    s.name !== 'Present + Full HW' && 
+                    s.name !== 'Present + Not Full H/W' &&
+                    !s.name.includes('Present')
+                )
+            }));
             updateStats();
-            showToast(`✅ Loaded ${allGroups.length} groups with ${getTotalStudents()} students`, 'success');
+            showToast(`✅ Loaded ${getTotalStudents()} students from ${allGroups.length} groups`, 'success');
             document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Connected';
         } else {
             showToast('⚠️ No data received from Web App', 'error');
-            loadDemoData();
         }
         
         document.getElementById('syncTime').innerText = new Date().toLocaleTimeString();
-    }
-
-    function loadDemoData() {
-        allGroups = [
-            { name: "Group 1", days: "odd", tabColor: "#1A5276", students: [
-                { rowIndex: 4, name: "Saydullayev Sanjar", phone: "773961171" },
-                { rowIndex: 5, name: "Ravshanov Ruslan", phone: "335376070" },
-                { rowIndex: 6, name: "Kashtiboeva Odina", phone: "933700640" }
-            ]},
-            { name: "Group 2", days: "odd", tabColor: "#1F618D", students: [
-                { rowIndex: 7, name: "Abdishukurov Dilshod", phone: "998881447600" }
-            ]},
-            { name: "Group 3", days: "odd", tabColor: "#2471A3", students: [] },
-            { name: "Group 4", days: "even", tabColor: "#784212", students: [
-                { rowIndex: 8, name: "Umid Eshboyev", phone: "899610821" }
-            ]},
-            { name: "Group 5", days: "even", tabColor: "#A04000", students: [] },
-            { name: "Group 6", days: "even", tabColor: "#CA6F1E", students: [] }
-        ];
-        updateStats();
-        showToast('⚠️ Using demo data - Check Web App response', 'warning');
-        document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Demo Mode';
     }
 
     function getTotalStudents() {
@@ -449,7 +444,7 @@
     function updateStats() {
         document.getElementById('totalStudents').innerText = getTotalStudents();
         document.getElementById('totalGroups').innerText = allGroups.length;
-        document.getElementById('currentMonth').innerText = new Date().toLocaleString('default', { month: 'short' });
+        document.getElementById('currentMonth').innerText = new Date().toLocaleString('default', { month: 'long' });
     }
 
     // ==================== UI RENDERING ====================
@@ -496,31 +491,11 @@
         renderAttendanceTable();
     }
 
-    function generateLessonDates() {
-        const dates = [];
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth();
-        const weekdays = currentDayType === 'odd' ? [1, 3, 5] : [2, 4, 6];
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
-        for (let d = 1; d <= daysInMonth; d++) {
-            const date = new Date(year, month, d);
-            if (weekdays.includes(date.getDay())) {
-                dates.push({
-                    day: d,
-                    weekday: date.toLocaleDateString('en', { weekday: 'short' })
-                });
-            }
-        }
-        return dates;
-    }
-
     function renderAttendanceTable() {
         if (!currentGroupData) return;
         
         const students = currentGroupData.students || [];
-        const lessonDates = generateLessonDates();
+        const lessonDates = currentGroupData.lessonDates || [];
         
         if (students.length === 0) {
             document.getElementById('tableContainer').innerHTML = `
@@ -537,19 +512,22 @@
             <table class="attendance-table">
                 <thead>
                     <tr>
-                        <th style="min-width: 160px; position: sticky; left: 0;">Student</th>
+                        <th style="min-width: 180px; position: sticky; left: 0; z-index: 20;">Student Name</th>
                         <th style="min-width: 100px;">Phone</th>
-                        ${lessonDates.map(ld => `<th>${ld.weekday}<br>${ld.day}</th>`).join('')}
-                        <th>Actions</th>
+                        ${lessonDates.map(ld => `<th style="min-width: 100px;">${ld.weekday}<br>${ld.day}</th>`).join('')}
+                        <th style="min-width: 80px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
         `;
         
         students.forEach((student) => {
+            // Skip invalid entries
+            if (!student.name || student.name === 'Present + Full HW' || student.name === 'Present + Not Full H/W') return;
+            
             tableHtml += `
                 <tr>
-                    <td class="student-name-cell"><strong>${escapeHtml(student.name)}</strong></td>
+                    <td class="student-name-cell" style="position: sticky; left: 0;"><strong>${escapeHtml(student.name)}</strong></td>
                     <td>${escapeHtml(student.phone)}</td>
                     ${lessonDates.map(ld => `
                         <td>
