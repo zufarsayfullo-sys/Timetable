@@ -315,7 +315,7 @@
         <div class="header-top">
             <h1><i class="fas fa-chalkboard-user"></i> Group Schedule Manager</h1>
             <div class="status-badge" id="connectionStatus">
-                <i class="fas fa-circle" style="font-size: 8px;"></i> Connecting...
+                <i class="fas fa-circle" style="font-size: 8px;"></i> Connected
             </div>
         </div>
         <div class="stats-grid">
@@ -366,7 +366,7 @@
 <button class="fab-add" id="fabAddBtn"><i class="fas fa-plus"></i> Add Student</button>
 
 <script>
-    // ==================== YOUR WEB APP URL ====================
+    // ==================== YOUR WORKING WEB APP URL ====================
     const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzDFMUtdFbn36uK_TyBbxJ8BlN2JdN671PT8cJhYJAklmfMHp9E0JIWTLcdlGpiIYgO/exec';
     
     let allGroups = [];
@@ -387,18 +387,8 @@
                 options.body = JSON.stringify(body);
             }
             
-            console.log(`Calling API: ${action}`, method, body);
             const response = await fetch(url, options);
-            const text = await response.text();
-            console.log(`Response:`, text);
-            
-            let json;
-            try {
-                json = JSON.parse(text);
-            } catch(e) {
-                console.error('Failed to parse JSON:', text);
-                throw new Error('Invalid response from server');
-            }
+            const json = await response.json();
             
             if (json.success) {
                 return json.data || json;
@@ -414,26 +404,16 @@
 
     async function loadAllData() {
         showToast('Loading data from Google Sheets...', 'info');
-        document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Loading...';
         
         const result = await callAPI('getAllData');
         
-        if (result && result.groups) {
+        if (result && result.groups && result.groups.length > 0) {
             allGroups = result.groups;
             updateStats();
             showToast(`✅ Loaded ${allGroups.length} groups with ${getTotalStudents()} students`, 'success');
             document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Connected';
-            document.getElementById('connectionStatus').style.background = 'rgba(16, 185, 129, 0.15)';
-        } else if (result && result.data && result.data.groups) {
-            allGroups = result.data.groups;
-            updateStats();
-            showToast(`✅ Loaded ${allGroups.length} groups`, 'success');
-            document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Connected';
         } else {
-            showToast('⚠️ Failed to load data from sheet - check Web App', 'error');
-            document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle" style="font-size: 8px; color: #ef4444;"></i> Connection Error';
-            document.getElementById('connectionStatus').style.background = 'rgba(239, 68, 68, 0.15)';
-            // Load demo data
+            showToast('⚠️ No data received from Web App', 'error');
             loadDemoData();
         }
         
@@ -444,18 +424,22 @@
         allGroups = [
             { name: "Group 1", days: "odd", tabColor: "#1A5276", students: [
                 { rowIndex: 4, name: "Saydullayev Sanjar", phone: "773961171" },
-                { rowIndex: 5, name: "Ravshanov Ruslan", phone: "335376070" }
+                { rowIndex: 5, name: "Ravshanov Ruslan", phone: "335376070" },
+                { rowIndex: 6, name: "Kashtiboeva Odina", phone: "933700640" }
             ]},
-            { name: "Group 2", days: "odd", tabColor: "#1F618D", students: [] },
+            { name: "Group 2", days: "odd", tabColor: "#1F618D", students: [
+                { rowIndex: 7, name: "Abdishukurov Dilshod", phone: "998881447600" }
+            ]},
             { name: "Group 3", days: "odd", tabColor: "#2471A3", students: [] },
             { name: "Group 4", days: "even", tabColor: "#784212", students: [
-                { rowIndex: 6, name: "Abdishukurov Dilshod", phone: "998881447600" }
+                { rowIndex: 8, name: "Umid Eshboyev", phone: "899610821" }
             ]},
             { name: "Group 5", days: "even", tabColor: "#A04000", students: [] },
             { name: "Group 6", days: "even", tabColor: "#CA6F1E", students: [] }
         ];
         updateStats();
-        showToast('⚠️ Using demo data - Web App not connected', 'warning');
+        showToast('⚠️ Using demo data - Check Web App response', 'warning');
+        document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Demo Mode';
     }
 
     function getTotalStudents() {
@@ -596,7 +580,7 @@
         };
         
         const result = await callAPI('updateAttendance', 'POST', payload);
-        if (result && result.success !== false) {
+        if (result) {
             showToast(`✅ ${status}`, 'success');
         } else {
             showToast(`⚠️ Failed to save`, 'error');
@@ -639,7 +623,7 @@
                 notes: ''
             };
             const result = await callAPI('addStudent', 'POST', payload);
-            if (result && result.success !== false) {
+            if (result) {
                 showToast(`✅ Added ${name}`, 'success');
                 loadAllData();
                 setTimeout(() => selectGroup(currentGroup), 1000);
@@ -656,7 +640,7 @@
                 notes: ''
             };
             const result = await callAPI('updateStudent', 'POST', payload);
-            if (result && result.success !== false) {
+            if (result) {
                 showToast(`✅ Updated ${name}`, 'success');
                 loadAllData();
                 setTimeout(() => selectGroup(currentGroup), 1000);
@@ -678,7 +662,7 @@
         };
         
         const result = await callAPI('deleteStudent', 'POST', payload);
-        if (result && result.success !== false) {
+        if (result) {
             showToast(`🗑️ Deleted ${studentName}`, 'success');
             loadAllData();
             setTimeout(() => selectGroup(groupName), 1000);
@@ -699,8 +683,8 @@
         };
         
         const result = await callAPI('sendNotifications', 'POST', payload);
-        if (result && result.success !== false) {
-            showToast(`✅ Sent to ${result.count || currentGroupData.students.length} students`, 'success');
+        if (result) {
+            showToast(`✅ Sent to ${currentGroupData.students.length} students`, 'success');
         } else {
             showToast(`⚠️ Failed to send`, 'error');
         }
