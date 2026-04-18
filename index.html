@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Group Schedule Manager | Attendance System</title>
+    <title>Group Schedule Manager | Live Attendance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -12,398 +14,339 @@
         }
 
         body {
-            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0f1c 0%, #0f172a 50%, #0a0f1c 100%);
             min-height: 100vh;
-            color: #f1f5f9;
+            color: #e2e8f0;
         }
 
-        .container {
+        .app {
             max-width: 1600px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 24px;
         }
 
         /* Header */
         .header {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 32px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
             padding: 24px 32px;
             margin-bottom: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
         .header h1 {
-            font-size: 2rem;
+            font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            background: linear-gradient(135deg, #ffffff, #94a3b8);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: #94a3b8;
-            margin-bottom: 20px;
-        }
-
-        .stats-row {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 12px 24px;
             display: flex;
             align-items: center;
             gap: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.15);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #10b981;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 16px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(59, 130, 246, 0.3);
         }
 
         .stat-icon {
             font-size: 28px;
+            margin-bottom: 12px;
         }
 
-        .stat-info h4 {
-            font-size: 12px;
-            font-weight: 400;
-            color: #94a3b8;
-        }
-
-        .stat-info .number {
-            font-size: 24px;
+        .stat-value {
+            font-size: 32px;
             font-weight: 700;
             color: white;
         }
 
-        /* Navigation */
-        .main-nav {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 14px 28px;
-            border-radius: 60px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: #cbd5e1;
-        }
-
-        .nav-btn.active {
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            border-color: transparent;
-            color: white;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-        }
-
-        .nav-btn:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+        .stat-label {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 4px;
         }
 
         /* Day Cards */
-        .days-container {
+        .day-cards {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 24px;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
         }
 
         .day-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-            border-radius: 28px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.02));
+            border-radius: 24px;
             padding: 28px;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
             text-align: center;
         }
 
-        .day-card.odd:hover {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
+        .day-card.even {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.02));
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .day-card:hover {
             transform: translateY(-4px);
-            border-color: #3b82f6;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
         }
 
         .day-card.even:hover {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05));
-            transform: translateY(-4px);
-            border-color: #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
         }
 
         .day-icon {
-            font-size: 48px;
+            font-size: 56px;
             margin-bottom: 12px;
         }
 
         .day-card h2 {
             font-size: 28px;
+            font-weight: 700;
             margin-bottom: 8px;
         }
 
         .day-card p {
             color: #94a3b8;
+            font-size: 14px;
         }
 
-        /* Groups Grid */
-        .groups-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-            gap: 24px;
-            margin-top: 24px;
+        /* Group Tabs */
+        .group-tabs {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .group-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            overflow: hidden;
-            backdrop-filter: blur(4px);
+        .group-tab {
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: transform 0.2s ease;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .group-card:hover {
-            transform: translateY(-4px);
+        .group-tab:hover {
+            background: rgba(255, 255, 255, 0.08);
         }
 
-        .group-header {
+        .group-tab.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-color: transparent;
+            color: white;
+        }
+
+        .group-count {
             background: rgba(0, 0, 0, 0.3);
-            padding: 18px 20px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        /* Action Bar */
+        .action-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-        }
-
-        .group-header h3 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .group-badge {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 12px;
-        }
-
-        .group-content {
-            padding: 20px;
-            display: none;
-        }
-
-        .group-content.active {
-            display: block;
-        }
-
-        /* Tables */
-        .student-table-wrapper {
-            overflow-x: auto;
-            margin-bottom: 20px;
-        }
-
-        .student-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        .student-table th {
-            text-align: left;
-            padding: 10px 8px;
-            color: #94a3b8;
-            font-weight: 500;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .student-table td {
-            padding: 10px 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            vertical-align: middle;
-        }
-
-        .student-table input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            padding: 6px 8px;
-            color: white;
-            width: 100%;
-            font-size: 12px;
-        }
-
-        /* Attendance Buttons */
-        .attendance-btns {
-            display: flex;
-            gap: 6px;
             flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
-        .attn-btn {
-            padding: 5px 10px;
-            border-radius: 20px;
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
             border: none;
-            cursor: pointer;
-            font-size: 11px;
+            padding: 12px 28px;
+            border-radius: 40px;
+            color: white;
             font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
             transition: all 0.2s;
         }
 
-        .attn-green {
-            background: #00B050;
-            color: white;
-        }
-        .attn-yellow {
-            background: #FFC000;
-            color: #1e293b;
-        }
-        .attn-red {
-            background: #FF0000;
-            color: white;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
         }
 
-        /* Buttons */
-        .send-group-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
-            border: none;
-            padding: 10px;
-            border-radius: 40px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 16px;
-            transition: opacity 0.2s;
-        }
-
-        .send-group-btn:hover {
-            opacity: 0.9;
-        }
-
-        .delete-btn {
-            background: #dc2626;
-            border: none;
-            border-radius: 20px;
-            padding: 5px 12px;
-            color: white;
-            cursor: pointer;
-            font-size: 11px;
-        }
-
-        .add-student-form {
-            display: flex;
-            gap: 8px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-
-        .add-student-form input {
-            flex: 1;
-            padding: 8px 12px;
-            border-radius: 40px;
+        .btn-outline {
+            background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.3);
-            color: white;
-        }
-
-        .add-student-form input::placeholder {
-            color: #94a3b8;
-        }
-
-        .add-student-form button {
-            background: #10b981;
-            border: none;
-            padding: 8px 20px;
+            padding: 12px 28px;
             border-radius: 40px;
-            color: white;
-            font-weight: 600;
+            color: #e2e8f0;
+            font-weight: 500;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* Reports Panel */
-        .reports-panel {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 28px;
-            padding: 24px;
-            margin-top: 20px;
-        }
-
-        .report-filters {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            align-items: flex-end;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .filter-group label {
-            font-size: 12px;
-            color: #94a3b8;
-        }
-
-        .filter-group input, .filter-group select {
-            padding: 8px 14px;
-            border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.3);
-            color: white;
-        }
-
-        .report-btn {
-            background: #3b82f6;
-            border: none;
-            padding: 8px 24px;
-            border-radius: 40px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .report-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .report-stat-card {
-            background: rgba(0, 0, 0, 0.3);
+        /* Table Container */
+        .table-container {
+            background: rgba(15, 23, 42, 0.6);
             border-radius: 20px;
-            padding: 16px;
-            text-align: center;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .report-table {
+        .attendance-table {
             width: 100%;
             border-collapse: collapse;
+            font-size: 13px;
+            min-width: 800px;
         }
 
-        .report-table th, .report-table td {
-            padding: 10px;
+        .attendance-table th {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 16px 12px;
+            text-align: center;
+            font-weight: 600;
+            color: #cbd5e1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 0;
+        }
+
+        .attendance-table td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .student-name-cell {
             text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.2);
+            position: sticky;
+            left: 0;
         }
 
-        /* Loading & Toast */
+        .attn-btn {
+            padding: 6px 14px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            margin: 2px;
+            transition: all 0.15s;
+        }
+
+        .attn-green { background: #00B050; color: white; }
+        .attn-yellow { background: #FFC000; color: #1e293b; }
+        .attn-red { background: #dc2626; color: white; }
+
+        .action-icon {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 6px;
+            margin: 0 4px;
+            transition: color 0.2s;
+        }
+
+        .action-icon:hover { color: #3b82f6; }
+        .action-icon.delete:hover { color: #dc2626; }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: #1e293b;
+            border-radius: 28px;
+            padding: 32px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-content h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* Loading */
         .loading {
             text-align: center;
             padding: 60px;
@@ -412,7 +355,7 @@
         .spinner {
             width: 40px;
             height: 40px;
-            border: 3px solid rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.1);
             border-top-color: #3b82f6;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
@@ -425,14 +368,16 @@
 
         .toast {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 24px;
-            border-radius: 40px;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            border-radius: 60px;
+            background: #1e293b;
             color: white;
             font-weight: 500;
-            z-index: 9999;
+            z-index: 1100;
             animation: slideIn 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
 
         @keyframes slideIn {
@@ -440,475 +385,457 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        .connection-error {
-            background: rgba(220, 38, 38, 0.2);
-            border: 1px solid #dc2626;
-            border-radius: 16px;
-            padding: 20px;
+        .empty-state {
             text-align: center;
-            margin: 20px 0;
+            padding: 60px;
+            color: #64748b;
         }
 
-        /* Responsive */
+        .fab-add {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border: none;
+            border-radius: 60px;
+            padding: 14px 24px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        .fab-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5);
+        }
+
         @media (max-width: 768px) {
-            .days-container {
-                grid-template-columns: 1fr;
-            }
-            .groups-grid {
-                grid-template-columns: 1fr;
-            }
-            .header h1 {
-                font-size: 1.5rem;
-            }
-            .stats-row {
-                flex-direction: column;
-            }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .day-cards { grid-template-columns: 1fr; }
+            .app { padding: 16px; }
+            .header h1 { font-size: 22px; }
+            .fab-add { padding: 10px 18px; font-size: 13px; }
         }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="app">
     <div class="header">
-        <h1>📊 Group Schedule Manager</h1>
-        <p>Smart attendance tracking for 6 groups | Toq & Juft kunlar</p>
-        <div class="stats-row" id="statsRow">
-            <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-info"><h4>Total Students</h4><div class="number" id="totalStudents">0</div></div></div>
-            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-info"><h4>Today Present</h4><div class="number" id="todayPresent">0</div></div></div>
-            <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-info"><h4>Today Absent</h4><div class="number" id="todayAbsent">0</div></div></div>
-            <div class="stat-card"><div class="stat-icon">⏰</div><div class="stat-info"><h4>Today Late</h4><div class="number" id="todayLate">0</div></div></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <h1><i class="fas fa-chalkboard-user"></i> Group Schedule Manager</h1>
+            <div class="status-badge" id="connectionStatus">
+                <i class="fas fa-circle" style="font-size: 8px;"></i> Connecting...
+            </div>
+        </div>
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value" id="totalStudents">0</div><div class="stat-label">Total Students</div></div>
+            <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-value" id="totalGroups">0</div><div class="stat-label">Active Groups</div></div>
+            <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-value" id="currentMonth"></div><div class="stat-label">Current Month</div></div>
+            <div class="stat-card"><div class="stat-icon">⚡</div><div class="stat-value" id="syncTime">-</div><div class="stat-label">Last Sync</div></div>
         </div>
     </div>
 
-    <div class="main-nav">
-        <button class="nav-btn active" data-view="days">📅 Days View</button>
-        <button class="nav-btn" data-view="reports">📈 Reports</button>
+    <div class="day-cards" id="dayCards">
+        <div class="day-card" data-day-type="odd">
+            <div class="day-icon">🔵</div>
+            <h2>TOQ KUNLAR</h2>
+            <p>Monday / Wednesday / Friday</p>
+        </div>
+        <div class="day-card even" data-day-type="even">
+            <div class="day-icon">🟠</div>
+            <h2>JUFT KUNLAR</h2>
+            <p>Tuesday / Thursday / Saturday</p>
+        </div>
     </div>
 
-    <div id="daysView">
-        <div class="days-container">
-            <div class="day-card odd" data-day-type="odd">
-                <div class="day-icon">🔵</div>
-                <h2>TOQ KUNLAR</h2>
-                <p>Monday / Wednesday / Friday</p>
-                <small>Click to open 3 groups →</small>
-            </div>
-            <div class="day-card even" data-day-type="even">
-                <div class="day-icon">🟠</div>
-                <h2>JUFT KUNLAR</h2>
-                <p>Tuesday / Thursday / Saturday</p>
-                <small>Click to open 3 groups →</small>
+    <div id="groupsSection" style="display: none;">
+        <div class="group-tabs" id="groupTabs"></div>
+        <div class="action-bar">
+            <div></div>
+            <div>
+                <button class="btn-outline" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                <button class="btn-primary" id="sendAllNotificationsBtn"><i class="fas fa-bell"></i> Send Notifications</button>
             </div>
         </div>
-        <div id="groupsContainer"></div>
-    </div>
-
-    <div id="reportsView" style="display: none;">
-        <div class="reports-panel">
-            <h3 style="margin-bottom: 20px;">📊 Attendance Reports</h3>
-            <div class="report-filters">
-                <div class="filter-group">
-                    <label>Report Type</label>
-                    <select id="reportType">
-                        <option value="daily">Daily Report</option>
-                        <option value="monthly">Monthly Summary</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Select Date</label>
-                    <input type="date" id="reportDate">
-                </div>
-                <div class="filter-group">
-                    <label>Select Group</label>
-                    <select id="reportGroup">
-                        <option value="all">All Groups</option>
-                        <option value="Group 1">Group 1</option>
-                        <option value="Group 2">Group 2</option>
-                        <option value="Group 3">Group 3</option>
-                        <option value="Group 4">Group 4</option>
-                        <option value="Group 5">Group 5</option>
-                        <option value="Group 6">Group 6</option>
-                    </select>
-                </div>
-                <button class="report-btn" id="generateReportBtn">Generate Report</button>
-            </div>
-            <div id="reportResults">
-                <div class="loading">Select filters and click Generate</div>
-            </div>
+        <div class="table-container" id="tableContainer">
+            <div class="loading"><div class="spinner"></div>Select a group to view attendance</div>
         </div>
     </div>
 </div>
 
+<!-- Modal -->
+<div id="studentModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">Add Student</h3>
+        <input type="text" id="studentName" placeholder="Full Name">
+        <input type="tel" id="studentPhone" placeholder="Phone Number">
+        <div class="modal-buttons">
+            <button class="btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn-primary" id="modalSaveBtn">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<button class="fab-add" id="fabAddBtn">
+    <i class="fas fa-plus"></i> Add Student
+</button>
+
 <script>
-    // ==================== CONFIGURATION ====================
-    const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzdTMu_8PHXVCLrMrXQtcjK8Ok9dlvW8U0dZKVvRgWognPSUBxqkUpT9mvFs1lbIh57/exec';
+    // ==================== YOUR WEB APP URL ====================
+    const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbyG1v11-d1qbd32TnBna-Te4QvSmvg1n7cgyRHT-OQFD0k5oFg6IxQKEW4CNbFnZyKF/exec';
     
-    let allGroupsData = [];
+    let allData = null;
     let currentDayType = null;
-    let isConnected = false;
+    let currentGroup = null;
+    let currentGroupData = null;
+    let selectedStudent = null;
+    let modalAction = 'add';
 
-    // ==================== SAMPLE DATA (FALLBACK IF API FAILS) ====================
-    const SAMPLE_GROUPS = [
-        { id: "Group 1", name: "Group 1", days: "odd", tabColor: "#1A5276", students: [
-            { rowIndex: 4, name: "Saydullayev Sanjar", phone: "773961171" },
-            { rowIndex: 5, name: "Ravshanov Ruslan", phone: "335376070" },
-            { rowIndex: 6, name: "Kashtiboeva Odina", phone: "933700640" }
-        ]},
-        { id: "Group 2", name: "Group 2", days: "odd", tabColor: "#1F618D", students: [
-            { rowIndex: 7, name: "Abdishukurov Dilshod", phone: "998881447600" },
-            { rowIndex: 8, name: "Xalimova Sarpy", phone: "975768510" }
-        ]},
-        { id: "Group 3", name: "Group 3", days: "odd", tabColor: "#2471A3", students: [
-            { rowIndex: 9, name: "Zaynayeva Sabrina", phone: "915501284" },
-            { rowIndex: 10, name: "Tuychiyev Zohid", phone: "938603836" }
-        ]},
-        { id: "Group 4", name: "Group 4", days: "even", tabColor: "#784212", students: [
-            { rowIndex: 11, name: "Umid Eshboyev", phone: "899610821" },
-            { rowIndex: 12, name: "Abulqasimov Bekzod", phone: "989695439073" }
-        ]},
-        { id: "Group 5", name: "Group 5", days: "even", tabColor: "#A04000", students: [
-            { rowIndex: 13, name: "Xushboeva Dilsoz", phone: "909913102585" },
-            { rowIndex: 14, name: "Bakhytov Azizbek", phone: "945304326" }
-        ]},
-        { id: "Group 6", name: "Group 6", days: "even", tabColor: "#CA6F1E", students: [
-            { rowIndex: 15, name: "Xasanov Azizbek", phone: "772383638" },
-            { rowIndex: 16, name: "Raxmatova Sevinch", phone: "952324979" }
-        ]}
-    ];
-
-    // ==================== API CALLS WITH ERROR HANDLING ====================
-    async function apiCall(action, method = 'GET', body = null) {
+    // ==================== API CALLS ====================
+    async function fetchAPI(action, method = 'GET', body = null) {
         try {
-            let url = WEBAPP_URL;
-            if (method === 'GET') {
-                url = `${WEBAPP_URL}?action=${encodeURIComponent(action)}`;
-            }
+            let url = `${WEBAPP_URL}?action=${encodeURIComponent(action)}`;
+            const options = { method, headers: { 'Content-Type': 'application/json' } };
             
-            const options = { 
-                method: method, 
-                mode: 'cors',
-                headers: { 'Content-Type': 'application/json' } 
-            };
             if (body && method === 'POST') {
+                url = WEBAPP_URL;
                 options.body = JSON.stringify(body);
             }
             
+            console.log(`Fetching: ${action}`, method);
             const response = await fetch(url, options);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
             const json = await response.json();
+            
             if (json.success) {
-                isConnected = true;
+                document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle" style="font-size: 8px; color: #10b981;"></i> Connected to Sheet';
+                document.getElementById('connectionStatus').style.background = 'rgba(16, 185, 129, 0.15)';
                 return json.data;
             } else {
                 throw new Error(json.error || 'Request failed');
             }
         } catch (err) {
             console.error('API Error:', err);
-            isConnected = false;
+            document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle" style="font-size: 8px; color: #f59e0b;"></i> Demo Mode';
+            document.getElementById('connectionStatus').style.background = 'rgba(245, 158, 11, 0.15)';
             return null;
         }
     }
 
     async function loadAllData() {
-        showLoading(true);
-        
-        // Try to load from API
-        const data = await apiCall('getAllData', 'GET');
+        showToast('Loading data from Google Sheets...', 'info');
+        const data = await fetchAPI('getAllData');
         
         if (data && data.groups && data.groups.length > 0) {
-            // Use real data from sheet
-            allGroupsData = data.groups;
-            showToast('✅ Connected to Google Sheets', 'success');
+            allData = data;
+            updateStats();
+            showToast(`✅ Loaded ${data.groups.length} groups from your sheet`, 'success');
         } else {
-            // Fallback to sample data
-            allGroupsData = SAMPLE_GROUPS;
-            showToast('⚠️ Using demo data - Connect to Web App for live sync', 'error');
+            // Demo data fallback with your actual students
+            allData = getDemoData();
+            updateStats();
+            showToast('⚠️ Using demo data - Check Web App deployment', 'warning');
         }
         
-        updateStats();
-        if (currentDayType) {
-            renderGroupsByDay(currentDayType);
-        }
-        
-        showLoading(false);
+        document.getElementById('syncTime').innerText = new Date().toLocaleTimeString();
     }
 
-    async function markAttendance(groupName, rowIndex, status) {
-        const today = new Date().toISOString().split('T')[0];
+    function getDemoData() {
+        return {
+            groups: [
+                { name: "Group 1", days: "odd", tabColor: "#1A5276", students: [
+                    { rowIndex: 4, name: "Saydullayev Sanjar", phone: "773961171" },
+                    { rowIndex: 5, name: "Ravshanov Ruslan", phone: "335376070" },
+                    { rowIndex: 6, name: "Kashtiboeva Odina", phone: "933700640" }
+                ]},
+                { name: "Group 2", days: "odd", tabColor: "#1F618D", students: [
+                    { rowIndex: 7, name: "Abdishukurov Dilshod", phone: "998881447600" },
+                    { rowIndex: 8, name: "Xalimova Sarpy", phone: "975768510" }
+                ]},
+                { name: "Group 3", days: "odd", tabColor: "#2471A3", students: [
+                    { rowIndex: 9, name: "Zaynayeva Sabrina", phone: "915501284" },
+                    { rowIndex: 10, name: "Tuychiyev Zohid", phone: "938603836" }
+                ]},
+                { name: "Group 4", days: "even", tabColor: "#784212", students: [
+                    { rowIndex: 11, name: "Umid Eshboyev", phone: "899610821" },
+                    { rowIndex: 12, name: "Abulqasimov Bekzod", phone: "989695439073" }
+                ]},
+                { name: "Group 5", days: "even", tabColor: "#A04000", students: [
+                    { rowIndex: 13, name: "Xushboeva Dilsoz", phone: "909913102585" },
+                    { rowIndex: 14, name: "Bakhytov Azizbek", phone: "945304326" }
+                ]},
+                { name: "Group 6", days: "even", tabColor: "#CA6F1E", students: [
+                    { rowIndex: 15, name: "Xasanov Azizbek", phone: "772383638" },
+                    { rowIndex: 16, name: "Raxmatova Sevinch", phone: "952324979" }
+                ]}
+            ],
+            lastUpdate: new Date().toISOString()
+        };
+    }
+
+    function updateStats() {
+        if (!allData) return;
+        const totalStudents = allData.groups.reduce((sum, g) => sum + (g.students?.length || 0), 0);
+        document.getElementById('totalStudents').innerText = totalStudents;
+        document.getElementById('totalGroups').innerText = allData.groups.length;
+        document.getElementById('currentMonth').innerText = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+    }
+
+    // ==================== UI RENDERING ====================
+    function selectDay(dayType) {
+        currentDayType = dayType;
+        const groups = allData.groups.filter(g => g.days === dayType);
         
-        if (!isConnected) {
-            showToast(`⚠️ Demo mode: ${status} (not saved to sheet)`, 'error');
+        if (groups.length === 0) {
+            document.getElementById('groupsSection').style.display = 'none';
+            showToast('No groups for this day type', 'warning');
             return;
         }
         
+        document.getElementById('groupsSection').style.display = 'block';
+        renderGroupTabs(groups);
+        
+        if (groups.length > 0 && !currentGroup) {
+            selectGroup(groups[0].name);
+        }
+    }
+
+    function renderGroupTabs(groups) {
+        const container = document.getElementById('groupTabs');
+        container.innerHTML = groups.map(group => `
+            <button class="group-tab ${currentGroup === group.name ? 'active' : ''}" data-group="${group.name}">
+                <i class="fas fa-users"></i> ${group.name}
+                <span class="group-count">${group.students?.length || 0}</span>
+            </button>
+        `).join('');
+        
+        document.querySelectorAll('.group-tab').forEach(btn => {
+            btn.addEventListener('click', () => selectGroup(btn.dataset.group));
+        });
+    }
+
+    function selectGroup(groupName) {
+        currentGroup = groupName;
+        currentGroupData = allData.groups.find(g => g.name === groupName);
+        
+        document.querySelectorAll('.group-tab').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.group === groupName);
+        });
+        
+        renderAttendanceTable();
+    }
+
+    function renderAttendanceTable() {
+        if (!currentGroupData) return;
+        
+        const students = currentGroupData.students || [];
+        const lessonDates = generateLessonDates();
+        
+        if (students.length === 0) {
+            document.getElementById('tableContainer').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-user-plus" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                    <p>No students in ${currentGroup} yet</p>
+                    <button class="btn-primary" style="margin-top: 16px;" onclick="openAddModal()">+ Add First Student</button>
+                </div>
+            `;
+            return;
+        }
+        
+        let tableHtml = `
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th style="min-width: 180px; position: sticky; left: 0;">Student</th>
+                        <th style="min-width: 100px;">Phone</th>
+                        ${lessonDates.map(ld => `<th>${ld.weekday}<br>${ld.day}</th>`).join('')}
+                        <th style="min-width: 100px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        students.forEach((student, idx) => {
+            tableHtml += `
+                <tr>
+                    <td class="student-name-cell" style="position: sticky; left: 0;">
+                        <strong>${escapeHtml(student.name)}</strong>
+                    </td>
+                    <td>${escapeHtml(student.phone)}</td>
+                    ${lessonDates.map(ld => `
+                        <td>
+                            <button class="attn-btn attn-green" onclick="markAttendance('${currentGroupData.name}', ${student.rowIndex}, 'Present + Full HW', ${ld.day})">✅ P</button>
+                            <button class="attn-btn attn-yellow" onclick="markAttendance('${currentGroupData.name}', ${student.rowIndex}, 'Present + Not Full H/W', ${ld.day})">🟡 P-</button>
+                            <button class="attn-btn attn-red" onclick="markAttendance('${currentGroupData.name}', ${student.rowIndex}, 'Absent / No Show', ${ld.day})">🔴 A</button>
+                        </td>
+                    `).join('')}
+                    <td>
+                        <button class="action-icon" onclick="openEditModal(${student.rowIndex}, '${escapeHtml(student.name)}', '${escapeHtml(student.phone)}')"><i class="fas fa-edit"></i></button>
+                        <button class="action-icon delete" onclick="deleteStudent('${currentGroupData.name}', ${student.rowIndex}, '${escapeHtml(student.name)}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        tableHtml += `</tbody></table>`;
+        document.getElementById('tableContainer').innerHTML = tableHtml;
+    }
+
+    function generateLessonDates() {
+        const dates = [];
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const weekdays = currentDayType === 'odd' ? [1, 3, 5] : [2, 4, 6];
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        for (let d = 1; d <= daysInMonth; d++) {
+            const date = new Date(year, month, d);
+            if (weekdays.includes(date.getDay())) {
+                dates.push({
+                    day: d,
+                    weekday: date.toLocaleDateString('en', { weekday: 'short' })
+                });
+            }
+        }
+        return dates;
+    }
+
+    // ==================== ATTENDANCE OPERATIONS ====================
+    async function markAttendance(groupName, rowIndex, status, day) {
         const payload = {
             action: 'updateAttendance',
             groupName: groupName,
-            date: today,
+            day: day,
             attendance: [{ rowIndex: rowIndex, status: status }]
         };
-        const result = await apiCall('updateAttendance', 'POST', payload);
+        
+        const result = await fetchAPI('updateAttendance', 'POST', payload);
         if (result) {
             showToast(`✅ Marked: ${status}`, 'success');
-            loadAllData();
         } else {
-            showToast(`⚠️ Failed to save - check connection`, 'error');
+            showToast(`⚠️ Demo: ${status} (not saved)`, 'warning');
         }
     }
 
-    async function addStudentToGroup(groupName, name, phone) {
-        if (!name.trim()) {
+    // ==================== STUDENT OPERATIONS ====================
+    function openAddModal() {
+        modalAction = 'add';
+        document.getElementById('modalTitle').innerText = 'Add New Student';
+        document.getElementById('studentName').value = '';
+        document.getElementById('studentPhone').value = '';
+        document.getElementById('studentModal').classList.add('active');
+    }
+
+    function openEditModal(rowIndex, name, phone) {
+        modalAction = 'edit';
+        selectedStudent = { rowIndex, name, phone };
+        document.getElementById('modalTitle').innerText = 'Edit Student';
+        document.getElementById('studentName').value = name;
+        document.getElementById('studentPhone').value = phone;
+        document.getElementById('studentModal').classList.add('active');
+    }
+
+    async function saveStudent() {
+        const name = document.getElementById('studentName').value.trim();
+        const phone = document.getElementById('studentPhone').value.trim();
+        
+        if (!name) {
             showToast('Please enter student name', 'error');
-            return false;
-        }
-        
-        if (!isConnected) {
-            showToast(`⚠️ Demo mode: "${name}" would be added to ${groupName}`, 'error');
-            return false;
-        }
-        
-        const payload = {
-            action: 'addStudent',
-            groupName: groupName,
-            name: name,
-            phone: phone || '',
-            notes: ''
-        };
-        const result = await apiCall('addStudent', 'POST', payload);
-        if (result) {
-            showToast(`✅ Student ${name} added`, 'success');
-            loadAllData();
-            return true;
-        }
-        return false;
-    }
-
-    async function updateStudentField(groupName, rowIndex, field, value) {
-        if (!isConnected) {
-            showToast(`⚠️ Demo mode: ${field} would be updated`, 'error');
             return;
         }
         
-        const payload = {
-            action: 'updateStudent',
-            groupName: groupName,
-            rowIndex: rowIndex,
-            name: field === 'name' ? value : '',
-            phone: field === 'phone' ? value : '',
-            notes: ''
-        };
-        await apiCall('updateStudent', 'POST', payload);
-        showToast(`✅ ${field} updated`, 'success');
-        loadAllData();
+        if (modalAction === 'add') {
+            const payload = {
+                action: 'addStudent',
+                groupName: currentGroup,
+                name: name,
+                phone: phone,
+                notes: ''
+            };
+            const result = await fetchAPI('addStudent', 'POST', payload);
+            if (result) {
+                showToast(`✅ Added ${name}`, 'success');
+                loadAllData();
+                setTimeout(() => selectGroup(currentGroup), 500);
+            } else {
+                const newRow = Math.max(...(currentGroupData.students.map(s => s.rowIndex) || [15])) + 1;
+                currentGroupData.students.push({ rowIndex: newRow, name: name, phone: phone });
+                renderAttendanceTable();
+                showToast(`⚠️ Demo: ${name} added locally`, 'warning');
+            }
+        } else if (modalAction === 'edit' && selectedStudent) {
+            const payload = {
+                action: 'updateStudent',
+                groupName: currentGroup,
+                rowIndex: selectedStudent.rowIndex,
+                name: name,
+                phone: phone,
+                notes: ''
+            };
+            const result = await fetchAPI('updateStudent', 'POST', payload);
+            if (result) {
+                showToast(`✅ Updated ${name}`, 'success');
+                loadAllData();
+                setTimeout(() => selectGroup(currentGroup), 500);
+            } else {
+                const student = currentGroupData.students.find(s => s.rowIndex === selectedStudent.rowIndex);
+                if (student) {
+                    student.name = name;
+                    student.phone = phone;
+                }
+                renderAttendanceTable();
+                showToast(`⚠️ Demo: ${name} updated locally`, 'warning');
+            }
+        }
+        
+        closeModal();
     }
 
-    async function deleteStudentFromGroup(groupName, rowIndex, studentName) {
+    async function deleteStudent(groupName, rowIndex, studentName) {
         if (!confirm(`Delete ${studentName}? This cannot be undone.`)) return;
-        
-        if (!isConnected) {
-            showToast(`⚠️ Demo mode: ${studentName} would be deleted`, 'error');
-            return;
-        }
         
         const payload = {
             action: 'deleteStudent',
             groupName: groupName,
             rowIndex: rowIndex
         };
-        const result = await apiCall('deleteStudent', 'POST', payload);
+        
+        const result = await fetchAPI('deleteStudent', 'POST', payload);
         if (result) {
             showToast(`🗑️ Deleted ${studentName}`, 'success');
             loadAllData();
+            setTimeout(() => selectGroup(groupName), 500);
+        } else {
+            const index = currentGroupData.students.findIndex(s => s.rowIndex === rowIndex);
+            if (index !== -1) currentGroupData.students.splice(index, 1);
+            renderAttendanceTable();
+            showToast(`⚠️ Demo: ${studentName} deleted locally`, 'warning');
         }
     }
 
-    async function sendGroupNotification(groupName) {
-        if (!isConnected) {
-            showToast(`⚠️ Demo mode: Would send notifications to ${groupName} parents`, 'error');
-            return;
-        }
+    async function sendAllNotifications() {
+        if (!currentGroupData) return;
         
-        showToast(`📨 Sending notifications to ${groupName}...`, 'success');
-        const today = new Date().toISOString().split('T')[0];
-        const attendanceData = await apiCall(`getAttendance&group=${encodeURIComponent(groupName)}&date=${today}`, 'GET');
-        
-        if (!attendanceData || !attendanceData.attendance || attendanceData.attendance.length === 0) {
-            showToast(`No attendance data for ${groupName} today`, 'error');
-            return;
-        }
-        
-        const notifications = [];
-        for (const student of attendanceData.attendance) {
-            if (student.status && student.status !== 'Not marked') {
-                notifications.push({
-                    studentId: student.studentId,
-                    studentName: student.name,
-                    status: student.status,
-                    rowIndex: student.rowIndex
-                });
-            }
-        }
+        showToast(`📨 Sending notifications to ${currentGroup} parents...`, 'info');
         
         const payload = {
-            action: 'sendGroupNotification',
-            groupName: groupName,
-            notifications: notifications,
-            date: today
+            action: 'sendNotifications',
+            groupName: currentGroup,
+            notifications: currentGroupData.students.map(s => ({ name: s.name, phone: s.phone }))
         };
         
-        const result = await apiCall('sendGroupNotification', 'POST', payload);
+        const result = await fetchAPI('sendNotifications', 'POST', payload);
         if (result) {
-            showToast(`✅ Sent ${notifications.length} notifications for ${groupName}`, 'success');
+            showToast(`✅ Notifications sent to ${currentGroupData.students.length} students`, 'success');
         } else {
-            showToast(`⚠️ Failed to send notifications`, 'error');
-        }
-    }
-
-    // ==================== UI RENDERING ====================
-    function updateStats() {
-        let total = 0;
-        if (allGroupsData) {
-            allGroupsData.forEach(g => {
-                total += (g.students ? g.students.length : 0);
-            });
-        }
-        document.getElementById('totalStudents').innerText = total;
-    }
-
-    function renderGroupsByDay(dayType) {
-        const container = document.getElementById('groupsContainer');
-        const groups = allGroupsData.filter(g => g.days === dayType);
-        
-        if (!groups.length) {
-            container.innerHTML = '<div class="loading">No groups found for this day type</div>';
-            return;
-        }
-
-        container.innerHTML = `<div class="groups-grid">${groups.map((group, idx) => `
-            <div class="group-card">
-                <div class="group-header" onclick="toggleGroupContent(${idx})" style="background: ${group.tabColor}40;">
-                    <h3>${escapeHtml(group.name)}</h3>
-                    <div class="group-badge">${group.students ? group.students.length : 0} students</div>
-                </div>
-                <div class="group-content" id="groupContent${idx}">
-                    <div class="student-table-wrapper">
-                        <table class="student-table">
-                            <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Today's Status</th><th>Actions</th></tr></thead>
-                            <tbody id="groupBody${idx}"></tbody>
-                        </table>
-                    </div>
-                    <div class="add-student-form">
-                        <input type="text" placeholder="Student name" id="newName${idx}">
-                        <input type="text" placeholder="Phone number" id="newPhone${idx}">
-                        <button onclick="handleAddStudent('${group.name}', ${idx})">+ Add</button>
-                    </div>
-                    <button class="send-group-btn" onclick="sendGroupNotification('${group.name}')">📢 Send Notifications to ${group.name}</button>
-                </div>
-            </div>
-        `).join('')}</div>`;
-
-        groups.forEach((group, idx) => {
-            const students = group.students || [];
-            const tbody = document.getElementById(`groupBody${idx}`);
-            if (!tbody) return;
-            
-            tbody.innerHTML = students.map((student, sidx) => `
-                <tr>
-                    <td>${sidx + 1}</td>
-                    <td><input type="text" value="${escapeHtml(student.name)}" 
-                               onchange="updateStudentField('${group.name}', ${student.rowIndex}, 'name', this.value)"></td>
-                    <td><input type="text" value="${escapeHtml(student.phone)}" 
-                               onchange="updateStudentField('${group.name}', ${student.rowIndex}, 'phone', this.value)"></td>
-                    <td><div class="attendance-btns">
-                        <button class="attn-btn attn-green" onclick="markAttendance('${group.name}', ${student.rowIndex}, 'Present + Full HW')">✅ Full HW</button>
-                        <button class="attn-btn attn-yellow" onclick="markAttendance('${group.name}', ${student.rowIndex}, 'Present + Not Full H/W')">🟡 Partial</button>
-                        <button class="attn-btn attn-red" onclick="markAttendance('${group.name}', ${student.rowIndex}, 'Absent / No Show')">🔴 Absent</button>
-                    </div></td>
-                    <td><button class="delete-btn" onclick="deleteStudentFromGroup('${group.name}', ${student.rowIndex}, '${escapeHtml(student.name)}')">Delete</button></td>
-                </tr>
-            `).join('');
-        });
-    }
-
-    window.toggleGroupContent = function(idx) {
-        const el = document.getElementById(`groupContent${idx}`);
-        if (el) {
-            el.classList.toggle('active');
-        }
-    };
-
-    window.handleAddStudent = async function(groupName, idx) {
-        const nameInput = document.getElementById(`newName${idx}`);
-        const phoneInput = document.getElementById(`newPhone${idx}`);
-        const name = nameInput ? nameInput.value : '';
-        const phone = phoneInput ? phoneInput.value : '';
-        const success = await addStudentToGroup(groupName, name, phone);
-        if (success) {
-            if (nameInput) nameInput.value = '';
-            if (phoneInput) phoneInput.value = '';
-        }
-    };
-
-    // Expose functions to global scope
-    window.markAttendance = markAttendance;
-    window.updateStudentField = updateStudentField;
-    window.deleteStudentFromGroup = deleteStudentFromGroup;
-    window.sendGroupNotification = sendGroupNotification;
-
-    // ==================== REPORTS ====================
-    async function generateReport() {
-        const type = document.getElementById('reportType').value;
-        const date = document.getElementById('reportDate').value;
-        const groupFilter = document.getElementById('reportGroup').value;
-        const container = document.getElementById('reportResults');
-        
-        if (!date && type === 'daily') {
-            container.innerHTML = '<div class="loading">Please select a date for daily report</div>';
-            return;
-        }
-        
-        container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading report...</div>';
-        
-        const fullData = allGroupsData;
-        
-        if (type === 'daily' && date) {
-            let reportHtml = `<div class="report-stats"><div class="report-stat-card">📅 Date: ${date}</div></div>`;
-            reportHtml += `<table class="report-table"><thead><tr><th>Group</th><th>Student</th><th>Status</th></tr></thead><tbody>`;
-            
-            for (const grp of fullData) {
-                if (groupFilter !== 'all' && grp.name !== groupFilter) continue;
-                
-                for (const student of (grp.students || [])) {
-                    reportHtml += `<tr>
-                        <td>${escapeHtml(grp.name)}</td>
-                        <td>${escapeHtml(student.name)}</td>
-                        <td>⚪ Not marked yet</td>
-                    </tr>`;
-                }
-            }
-            reportHtml += `</tbody>}七年级`;
-            container.innerHTML = reportHtml;
-        } 
-        else if (type === 'monthly') {
-            let summaryHtml = `<div class="report-stats"><div class="report-stat-card">📊 Monthly Summary</div></div>`;
-            summaryHtml += `<table class="report-table"><thead><tr><th>Group</th><th>Student</th><th>Status</th></tr></thead><tbody>`;
-            
-            for (const grp of fullData) {
-                if (groupFilter !== 'all' && grp.name !== groupFilter) continue;
-                
-                for (const student of (grp.students || [])) {
-                    summaryHtml += `<tr>
-                        <td>${escapeHtml(grp.name)}</td>
-                        <td>${escapeHtml(student.name)}</td>
-                        <td>📊 Monthly data available after marking attendance</td>
-                    </tr>`;
-                }
-            }
-            summaryHtml += `</tbody>}七年级`;
-            container.innerHTML = summaryHtml;
+            showToast(`⚠️ Demo: Would send ${currentGroupData.students.length} notifications`, 'warning');
         }
     }
 
@@ -916,56 +843,41 @@
     function showToast(message, type) {
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.style.background = type === 'error' ? '#dc2626' : '#10b981';
-        toast.innerText = message;
+        const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' };
+        toast.style.background = colors[type] || colors.info;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
     }
 
     function escapeHtml(str) {
         if (!str) return '';
-        return String(str).replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
+        return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
     }
 
-    function showLoading(show) {
-        // Optional
+    function closeModal() {
+        document.getElementById('studentModal').classList.remove('active');
     }
 
     // ==================== EVENT LISTENERS ====================
     document.querySelectorAll('.day-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const dayType = card.dataset.dayType;
-            currentDayType = dayType;
-            renderGroupsByDay(dayType);
-            document.getElementById('groupsContainer').scrollIntoView({ behavior: 'smooth' });
-        });
+        card.addEventListener('click', () => selectDay(card.dataset.dayType));
     });
 
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const view = btn.dataset.view;
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('daysView').style.display = view === 'days' ? 'block' : 'none';
-            document.getElementById('reportsView').style.display = view === 'reports' ? 'block' : 'none';
-            if (view === 'reports') {
-                document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
-            }
-        });
+    document.getElementById('refreshBtn')?.addEventListener('click', () => {
+        loadAllData();
+        if (currentGroup) setTimeout(() => selectGroup(currentGroup), 500);
     });
 
-    document.getElementById('generateReportBtn')?.addEventListener('click', generateReport);
-
-    // Initialize with sample data immediately (no fetch delay)
-    allGroupsData = SAMPLE_GROUPS;
-    updateStats();
+    document.getElementById('sendAllNotificationsBtn')?.addEventListener('click', sendAllNotifications);
+    document.getElementById('modalSaveBtn')?.addEventListener('click', saveStudent);
+    document.getElementById('fabAddBtn')?.addEventListener('click', openAddModal);
     
-    // Then try to connect to API
+    document.getElementById('studentModal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('studentModal')) closeModal();
+    });
+
+    // Initialize
     loadAllData();
 </script>
 </body>
