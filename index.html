@@ -4,1007 +4,623 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dars Jadvali — Teacher Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+<title>Dars Jadvali</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:       #0d0f14;
-    --surface:  #161922;
-    --card:     #1e2330;
-    --border:   #2a2f3d;
-    --accent:   #4f9cf9;
-    --accent2:  #a78bfa;
-    --green:    #00b050;
-    --yellow:   #ffc000;
-    --red:      #ff3333;
-    --text:     #e8eaf0;
-    --muted:    #6b7280;
-    --mono:     'JetBrains Mono', monospace;
-    --display:  'Unbounded', sans-serif;
-  }
-
-- { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-background: var(–bg);
-color: var(–text);
-font-family: var(–mono);
-font-size: 13px;
-min-height: 100vh;
+:root {
+  --bg:      #0d0f14;
+  --surf:    #161922;
+  --card:    #1e2330;
+  --border:  #2a2f3d;
+  --accent:  #4f9cf9;
+  --green:   #00b050;
+  --yellow:  #e6ac00;
+  --red:     #e03333;
+  --text:    #e8eaf0;
+  --muted:   #6b7280;
+  --mono:    'JetBrains Mono', monospace;
+  --head:    'Unbounded', sans-serif;
 }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; min-height: 100vh; }
 
-/* ── TOPBAR ── */
 .topbar {
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 0 24px;
-height: 56px;
-background: var(–surface);
-border-bottom: 1px solid var(–border);
-position: sticky;
-top: 0;
-z-index: 100;
+display: flex; align-items: center; justify-content: space-between;
+padding: 0 20px; height: 52px;
+background: var(–surf); border-bottom: 1px solid var(–border);
+position: sticky; top: 0; z-index: 200;
 }
-.topbar-brand {
-font-family: var(–display);
-font-size: 13px;
-font-weight: 900;
-letter-spacing: 0.05em;
-color: var(–accent);
-text-transform: uppercase;
-}
-.topbar-status {
-display: flex;
-align-items: center;
-gap: 8px;
-font-size: 11px;
-color: var(–muted);
-}
-.dot {
-width: 8px; height: 8px;
-border-radius: 50%;
-background: var(–muted);
-}
-.dot.live { background: var(–green); box-shadow: 0 0 8px var(–green); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.brand { font-family: var(–head); font-size: 12px; font-weight: 900; color: var(–accent); letter-spacing: .06em; }
+.top-right { display: flex; align-items: center; gap: 10px; }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(–muted); transition: background .3s; }
+.live-dot.on { background: var(–green); box-shadow: 0 0 6px var(–green); animation: blink 2s infinite; }
+.live-dot.err { background: var(–red); }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+#status-txt { font-size: 11px; color: var(–muted); }
 
-/* ── SETUP SCREEN ── */
-#setup-screen {
-display: flex;
-align-items: center;
-justify-content: center;
-min-height: calc(100vh - 56px);
-padding: 24px;
+.layout { display: flex; height: calc(100vh - 52px); }
+
+.sidebar {
+width: 185px; flex-shrink: 0;
+background: var(–surf); border-right: 1px solid var(–border);
+overflow-y: auto; padding: 12px 0;
 }
-.setup-card {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 12px;
-padding: 40px;
-max-width: 520px;
-width: 100%;
+.sb-label { font-size: 10px; color: var(–muted); text-transform: uppercase; letter-spacing: .1em; padding: 0 14px 8px; }
+.sb-btn {
+display: flex; align-items: center; justify-content: space-between;
+width: 100%; padding: 9px 14px;
+background: none; border: none; border-left: 3px solid transparent;
+color: var(–muted); font-family: var(–mono); font-size: 12px;
+cursor: pointer; text-align: left; transition: all .12s;
 }
-.setup-card h2 {
-font-family: var(–display);
-font-size: 18px;
-font-weight: 900;
-margin-bottom: 8px;
-color: var(–accent);
+.sb-btn:hover { color: var(–text); background: var(–card); }
+.sb-btn.active { color: var(–accent); border-left-color: var(–accent); background: var(–card); }
+.sb-tag { font-size: 10px; background: var(–border); padding: 2px 5px; border-radius: 3px; }
+.sb-sep { height: 1px; background: var(–border); margin: 10px 14px; }
+.sb-nav {
+display: flex; align-items: center; gap: 8px;
+width: 100%; padding: 9px 14px;
+background: none; border: none;
+color: var(–muted); font-family: var(–mono); font-size: 12px;
+cursor: pointer; transition: color .12s; text-align: left;
 }
-.setup-card p { color: var(–muted); margin-bottom: 24px; line-height: 1.6; }
-.field { margin-bottom: 16px; }
-.field label { display: block; font-size: 11px; color: var(–muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
+.sb-nav:hover { color: var(–text); }
+.sb-nav.active { color: #a78bfa; }
+
+.main { flex: 1; overflow: auto; padding: 22px; }
+
+.btn {
+display: inline-flex; align-items: center; gap: 6px;
+padding: 8px 16px; border: none; border-radius: 6px;
+font-family: var(–mono); font-size: 11px; font-weight: 700;
+cursor: pointer; transition: opacity .15s; text-transform: uppercase; letter-spacing: .04em;
+}
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn-blue  { background: var(–accent); color: #fff; }
+.btn-green { background: var(–green);  color: #fff; }
+.btn-ghost { background: transparent; color: var(–muted); border: 1px solid var(–border); }
+.btn-ghost:hover { border-color: var(–accent); color: var(–accent); }
+
+.ph { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+.ph-title { font-family: var(–head); font-size: 18px; font-weight: 900; }
+.ph-sub { color: var(–muted); font-size: 11px; margin-top: 3px; }
+
+.send-panel { background: var(–card); border: 1px solid var(–border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.send-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.send-stats { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; flex: 1; }
+.sc { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; color: #fff; }
+.sc-g { background: var(–green); }
+.sc-y { background: var(–yellow); }
+.sc-r { background: var(–red); }
+.sc-e { background: var(–border); color: var(–muted); }
+#send-result { margin-top: 10px; font-size: 12px; }
+
+.date-bar { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+.dc {
+flex-shrink: 0; padding: 5px 11px; border-radius: 6px;
+background: var(–card); border: 1px solid var(–border);
+color: var(–muted); font-family: var(–mono); font-size: 11px;
+cursor: pointer; transition: all .12s; text-align: center; line-height: 1.4;
+}
+.dc:hover { border-color: var(–accent); color: var(–text); }
+.dc.active { background: var(–accent); border-color: var(–accent); color: #fff; font-weight: 700; }
+.dc.today  { border-color: #a78bfa; }
+
+.tbl-wrap { background: var(–card); border: 1px solid var(–border); border-radius: 8px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: var(–surf); }
+th { padding: 9px 13px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(–muted); font-weight: 700; border-bottom: 1px solid var(–border); white-space: nowrap; }
+tbody tr { border-bottom: 1px solid var(–border); transition: background .08s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(–surf); }
+td { padding: 9px 13px; }
+.sname  { font-weight: 700; }
+.sphone { color: var(–muted); }
+.editable { cursor: pointer; }
+.editable:hover { text-decoration: underline dotted; }
+.inline-inp {
+background: var(–bg); border: 1px solid var(–accent);
+border-radius: 4px; padding: 3px 7px;
+color: var(–text); font-family: var(–mono); font-size: 12px;
+outline: none; width: 160px;
+}
+
+.att {
+display: inline-flex; align-items: center;
+padding: 4px 9px; border-radius: 4px;
+font-size: 11px; font-weight: 700;
+cursor: pointer; border: none; font-family: var(–mono);
+transition: opacity .12s; white-space: nowrap;
+}
+.att:hover { opacity: .8; }
+.att-g { background: var(–green);  color: #fff; }
+.att-y { background: var(–yellow); color: #fff; }
+.att-r { background: var(–red);    color: #fff; }
+.att-e { background: var(–border); color: var(–muted); }
+
+.popup {
+position: fixed; z-index: 600;
+background: var(–card); border: 1px solid var(–border);
+border-radius: 8px; padding: 6px; min-width: 230px;
+box-shadow: 0 8px 32px rgba(0,0,0,.6);
+display: none;
+}
+.popup.show { display: block; }
+.pop-opt {
+display: block; width: 100%; padding: 8px 11px; border: none; border-radius: 4px;
+background: none; color: var(–text); font-family: var(–mono); font-size: 11px; font-weight: 700;
+cursor: pointer; text-align: left; margin-bottom: 3px; transition: opacity .1s;
+}
+.pop-opt:last-child { margin-bottom: 0; }
+.pop-opt:hover { opacity: .8; color: #fff; }
+.pop-clear { background: var(–border) !important; color: var(–muted) !important; }
+
+.log-card { background: var(–card); border: 1px solid var(–border); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+.log-head { padding: 11px 15px; background: var(–surf); border-bottom: 1px solid var(–border); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.log-grp  { font-weight: 700; color: var(–accent); }
+.log-date { color: var(–muted); font-size: 11px; }
+.log-time { color: var(–muted); font-size: 11px; margin-left: auto; }
+.log-body { padding: 11px 15px; display: flex; flex-wrap: wrap; gap: 5px; }
+
+.set-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media(max-width:650px){ .set-grid { grid-template-columns: 1fr; } }
+.set-sec { background: var(–card); border: 1px solid var(–border); border-radius: 8px; padding: 18px; }
+.set-sec h3 { font-family: var(–head); font-size: 11px; font-weight: 700; color: var(–accent); margin-bottom: 14px; text-transform: uppercase; }
+.set-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.set-row label { width: 110px; flex-shrink: 0; color: var(–muted); font-size: 11px; }
+.set-row input {
+flex: 1; background: var(–bg); border: 1px solid var(–border);
+border-radius: 4px; padding: 7px 9px;
+color: var(–text); font-family: var(–mono); font-size: 12px; outline: none;
+}
+.set-row input:focus { border-color: var(–accent); }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 11px; color: var(–muted); margin-bottom: 5px; }
 .field input {
-width: 100%;
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 6px;
-padding: 10px 12px;
-color: var(–text);
-font-family: var(–mono);
-font-size: 12px;
-outline: none;
-transition: border-color .2s;
+width: 100%; background: var(–bg); border: 1px solid var(–border);
+border-radius: 4px; padding: 7px 9px;
+color: var(–text); font-family: var(–mono); font-size: 12px; outline: none;
 }
 .field input:focus { border-color: var(–accent); }
 
-/* ── BUTTONS ── */
-.btn {
-display: inline-flex; align-items: center; gap: 6px;
-padding: 9px 18px;
-border: none; border-radius: 6px;
-font-family: var(–mono); font-size: 12px; font-weight: 700;
-cursor: pointer; transition: all .15s; text-transform: uppercase; letter-spacing: 0.05em;
-}
-.btn-primary { background: var(–accent); color: #fff; }
-.btn-primary:hover { background: #6aabff; }
-.btn-danger  { background: var(–red);    color: #fff; }
-.btn-danger:hover { opacity: .85; }
-.btn-success { background: var(–green);  color: #fff; }
-.btn-success:hover { opacity: .85; }
-.btn-ghost { background: transparent; color: var(–muted); border: 1px solid var(–border); }
-.btn-ghost:hover { border-color: var(–accent); color: var(–accent); }
-.btn:disabled { opacity: .4; cursor: not-allowed; }
-
-/* ── MAIN LAYOUT ── */
-#app { display: none; }
-#app.visible { display: block; }
-
-.layout { display: flex; height: calc(100vh - 56px); }
-
-/* ── SIDEBAR ── */
-.sidebar {
-width: 200px;
-background: var(–surface);
-border-right: 1px solid var(–border);
-flex-shrink: 0;
-overflow-y: auto;
-padding: 16px 0;
-}
-.sidebar-label {
-font-size: 10px; color: var(–muted);
-text-transform: uppercase; letter-spacing: 0.1em;
-padding: 0 16px 8px;
-}
-.group-btn {
-display: flex; align-items: center;
-width: 100%; padding: 10px 16px;
-background: none; border: none;
-color: var(–muted); font-family: var(–mono); font-size: 12px;
-cursor: pointer; text-align: left;
-border-left: 3px solid transparent;
-transition: all .15s;
-}
-.group-btn:hover { color: var(–text); background: var(–card); }
-.group-btn.active { color: var(–accent); border-left-color: var(–accent); background: var(–card); }
-.group-tag {
-margin-left: auto; font-size: 10px;
-background: var(–border); padding: 2px 6px; border-radius: 4px;
-}
-.sidebar-sep { height: 1px; background: var(–border); margin: 12px 16px; }
-.sidebar-nav-btn {
-display: flex; align-items: center; gap: 8px;
-width: 100%; padding: 10px 16px;
-background: none; border: none;
-color: var(–muted); font-family: var(–mono); font-size: 12px;
-cursor: pointer; text-align: left; transition: color .15s;
-}
-.sidebar-nav-btn:hover { color: var(–text); }
-.sidebar-nav-btn.active { color: var(–accent2); }
-
-/* ── MAIN CONTENT ── */
-.main {
-flex: 1; overflow-x: auto; overflow-y: auto;
-padding: 24px;
-background: var(–bg);
-}
-
-/* ── PAGE HEADER ── */
-.page-header {
-display: flex; align-items: center; gap: 16px;
-margin-bottom: 20px; flex-wrap: wrap;
-}
-.page-title {
-font-family: var(–display); font-size: 20px; font-weight: 900;
-}
-.page-subtitle { color: var(–muted); font-size: 11px; margin-top: 2px; }
-.page-header-actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
-
-/* ── DATE SELECTOR ── */
-.date-bar {
-display: flex; gap: 6px; margin-bottom: 20px;
-overflow-x: auto; padding-bottom: 4px;
-}
-.date-chip {
-flex-shrink: 0;
-padding: 6px 12px; border-radius: 6px;
-background: var(–card); border: 1px solid var(–border);
-color: var(–muted); font-family: var(–mono); font-size: 11px;
-cursor: pointer; transition: all .15s; white-space: nowrap;
-}
-.date-chip:hover { border-color: var(–accent); color: var(–text); }
-.date-chip.active { background: var(–accent); border-color: var(–accent); color: #fff; font-weight: 700; }
-.date-chip.today { border-color: var(–accent2); }
-
-/* ── STUDENT TABLE ── */
-.table-wrap {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 10px;
-overflow: hidden;
-}
-table { width: 100%; border-collapse: collapse; }
-thead tr { background: var(–surface); }
-th {
-padding: 10px 14px; text-align: left;
-font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
-color: var(–muted); font-weight: 700; white-space: nowrap;
-border-bottom: 1px solid var(–border);
-}
-tbody tr { border-bottom: 1px solid var(–border); transition: background .1s; }
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: var(–surface); }
-td { padding: 10px 14px; }
-
-.student-name { font-weight: 700; color: var(–text); }
-.student-phone { color: var(–muted); font-size: 12px; }
-.student-notes { color: var(–muted); font-size: 11px; font-style: italic; }
-
-/* ── ATTENDANCE BADGE ── */
-.att-badge {
-display: inline-flex; align-items: center;
-padding: 4px 10px; border-radius: 4px;
-font-size: 11px; font-weight: 700;
-cursor: pointer; white-space: nowrap;
-transition: opacity .15s;
-border: none; font-family: var(–mono);
-}
-.att-badge:hover { opacity: .8; }
-.att-present  { background: var(–green); color: #fff; }
-.att-partial  { background: var(–yellow); color: #fff; }
-.att-absent   { background: var(–red);   color: #fff; }
-.att-empty    { background: var(–border); color: var(–muted); }
-
-/* ── ATTENDANCE POPUP ── */
-.att-popup {
-position: fixed; z-index: 500;
-background: var(–card); border: 1px solid var(–border);
-border-radius: 8px; padding: 8px;
-box-shadow: 0 8px 32px rgba(0,0,0,.5);
-display: none;
-min-width: 220px;
-}
-.att-popup.show { display: block; }
-.att-option {
-display: block; width: 100%;
-padding: 8px 12px; border: none; border-radius: 4px;
-background: none; color: var(–text);
-font-family: var(–mono); font-size: 11px; font-weight: 700;
-cursor: pointer; text-align: left; margin-bottom: 4px;
-transition: all .1s;
-}
-.att-option:last-child { margin-bottom: 0; }
-.att-option:hover { opacity: .85; color: #fff; }
-.att-option.opt-clear { background: var(–border); color: var(–muted); }
-
-/* ── SEND PANEL ── */
-.send-panel {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 10px;
-padding: 20px;
-margin-bottom: 20px;
-}
-.send-panel h3 {
-font-family: var(–display); font-size: 13px; font-weight: 700;
-margin-bottom: 16px; color: var(–text);
-}
-.send-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.send-info { flex: 1; color: var(–muted); font-size: 12px; }
-.send-stat { color: var(–text); font-weight: 700; }
-
-/* ── LOG VIEW ── */
-.log-entry {
-background: var(–card); border: 1px solid var(–border);
-border-radius: 8px; margin-bottom: 12px; overflow: hidden;
-}
-.log-header {
-padding: 12px 16px; background: var(–surface);
-border-bottom: 1px solid var(–border);
-display: flex; align-items: center; gap: 12px;
-}
-.log-group { font-weight: 700; color: var(–accent); }
-.log-date  { color: var(–muted); font-size: 11px; }
-.log-time  { color: var(–muted); font-size: 11px; margin-left: auto; }
-.log-rows  { padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 6px; }
-.log-item  { font-size: 11px; padding: 3px 8px; border-radius: 4px; }
-
-/* ── SPINNER ── */
-.spinner {
-display: inline-block; width: 14px; height: 14px;
-border: 2px solid rgba(255,255,255,.3);
-border-top-color: #fff; border-radius: 50%;
-animation: spin .6s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── TOAST ── */
-#toast-container {
-position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-display: flex; flex-direction: column; gap: 8px;
-}
-.toast {
-padding: 12px 18px; border-radius: 8px;
-font-size: 12px; font-family: var(–mono);
-box-shadow: 0 4px 20px rgba(0,0,0,.4);
-animation: slideIn .2s ease;
-max-width: 320px;
-}
-.toast.success { background: #1a3d2b; border: 1px solid var(–green); color: #4ade80; }
-.toast.error   { background: #3d1a1a; border: 1px solid var(–red);   color: #f87171; }
-.toast.info    { background: #1a2a3d; border: 1px solid var(–accent); color: #93c5fd; }
-@keyframes slideIn { from { transform: translateX(40px); opacity:0; } to { transform: none; opacity:1; } }
-
-/* ── LOADING OVERLAY ── */
-#loading {
-position: fixed; inset: 0; background: rgba(13,15,20,.85);
+#overlay {
+position: fixed; inset: 0; background: rgba(13,15,20,.92);
 display: flex; flex-direction: column; align-items: center; justify-content: center;
-z-index: 9000; gap: 16px;
+z-index: 9999; gap: 14px;
 }
-#loading .big-spinner {
-width: 40px; height: 40px;
-border: 3px solid rgba(79,156,249,.2);
-border-top-color: var(–accent); border-radius: 50%;
-animation: spin .8s linear infinite;
-}
-#loading p { color: var(–muted); font-size: 12px; }
+.spin { width: 36px; height: 36px; border: 3px solid rgba(79,156,249,.2); border-top-color: var(–accent); border-radius: 50%; animation: sp .7s linear infinite; }
+@keyframes sp { to{transform:rotate(360deg)} }
+#overlay p { color: var(–muted); font-size: 12px; }
 
-/* ── SETTINGS VIEW ── */
-.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-@media (max-width: 700px) { .settings-grid { grid-template-columns: 1fr; } }
-.settings-section {
-background: var(–card); border: 1px solid var(–border);
-border-radius: 10px; padding: 20px;
-}
-.settings-section h3 {
-font-family: var(–display); font-size: 12px; font-weight: 700;
-color: var(–accent); margin-bottom: 16px; text-transform: uppercase;
-}
-.setting-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.setting-row label { width: 130px; flex-shrink: 0; color: var(–muted); font-size: 11px; }
-.setting-row input {
-flex: 1; background: var(–bg); border: 1px solid var(–border);
-border-radius: 4px; padding: 7px 10px;
-color: var(–text); font-family: var(–mono); font-size: 12px; outline: none;
-}
-.setting-row input:focus { border-color: var(–accent); }
+#toasts { position: fixed; bottom: 20px; right: 20px; z-index: 9998; display: flex; flex-direction: column; gap: 7px; }
+.toast { padding: 11px 16px; border-radius: 7px; font-size: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.4); animation: tin .2s ease; max-width: 300px; }
+.toast.ok  { background: #1a3d2b; border: 1px solid var(–green);  color: #4ade80; }
+.toast.err { background: #3d1a1a; border: 1px solid var(–red);    color: #f87171; }
+.toast.inf { background: #1a2a3d; border: 1px solid var(–accent); color: #93c5fd; }
+@keyframes tin { from{transform:translateX(30px);opacity:0} to{transform:none;opacity:1} }
 
-/* ── INLINE EDIT ── */
-.editable { cursor: pointer; }
-.editable:hover { text-decoration: underline; text-decoration-style: dotted; }
-.inline-input {
-background: var(–bg); border: 1px solid var(–accent);
-border-radius: 4px; padding: 3px 8px;
-color: var(–text); font-family: var(–mono); font-size: 12px; outline: none;
-width: 160px;
-}
-
-/* ── RESPONSIVE ── */
-@media (max-width: 600px) {
-.sidebar { width: 56px; }
-.group-btn span { display: none; }
-.group-tag { display: none; }
-.sidebar-label { display: none; }
-.sidebar-nav-btn span { display: none; }
-}
+.sp-sm { display:inline-block; width:12px; height:12px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:sp .6s linear infinite; vertical-align:middle; }
 </style>
 
 </head>
 <body>
 
-<!-- TOPBAR -->
-
 <div class="topbar">
-  <div class="topbar-brand">📚 Dars Jadvali</div>
-  <div class="topbar-status">
-    <div class="dot" id="status-dot"></div>
-    <span id="status-text">Connecting…</span>
-    <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;" onclick="loadData()">↻ Refresh</button>
+  <div class="brand">📚 DARS JADVALI</div>
+  <div class="top-right">
+    <div class="live-dot" id="dot"></div>
+    <span id="status-txt">Connecting…</span>
+    <button class="btn btn-ghost" style="padding:4px 10px" onclick="reload()">↻ Refresh</button>
   </div>
 </div>
 
-<!-- LOADING -->
-
-<div id="loading">
-  <div class="big-spinner"></div>
-  <p id="loading-text">Loading…</p>
+<div id="overlay">
+  <div class="spin"></div>
+  <p id="overlay-txt">Connecting to Google Sheet…</p>
 </div>
 
-<!-- SETUP SCREEN -->
-
-<div id="setup-screen" style="display:none;">
-  <div class="setup-card">
-    <h2>🔌 Connect to Google Sheet</h2>
-    <p>Enter your Apps Script Web App URL and secret key to connect the dashboard to your Google Sheet.</p>
-    <div class="field">
-      <label>Apps Script Web App URL</label>
-      <input id="setup-url" type="url" placeholder="https://script.google.com/macros/s/…/exec">
-    </div>
-    <div class="field">
-      <label>Secret Key</label>
-      <input id="setup-secret" type="text" placeholder="MY_SECRET_KEY_CHANGE_THIS">
-    </div>
-    <button class="btn btn-primary" onclick="saveConfig()">Connect →</button>
-  </div>
-</div>
-
-<!-- MAIN APP -->
-
-<div id="app">
+<div id="app" style="display:none">
   <div class="layout">
-
-```
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <div class="sidebar-label">Groups</div>
-  <div id="group-list"></div>
-  <div class="sidebar-sep"></div>
-  <button class="sidebar-nav-btn" id="nav-logs" onclick="showView('logs')">
-    <span>📋</span><span>Send Logs</span>
-  </button>
-  <button class="sidebar-nav-btn" id="nav-settings" onclick="showView('settings')">
-    <span>⚙️</span><span>Settings</span>
-  </button>
-  <div class="sidebar-sep"></div>
-  <button class="sidebar-nav-btn" onclick="clearConfig()" style="color:var(--red)">
-    <span>🔌</span><span>Disconnect</span>
-  </button>
-</div>
-
-<!-- MAIN -->
-<div class="main" id="main-content">
-  <div id="view-group"></div>
-  <div id="view-logs"     style="display:none;"></div>
-  <div id="view-settings" style="display:none;"></div>
-</div>
-```
-
+    <div class="sidebar">
+      <div class="sb-label">Groups</div>
+      <div id="grp-list"></div>
+      <div class="sb-sep"></div>
+      <button class="sb-nav" id="nav-logs"     onclick="showView('logs')">📋 Send Logs</button>
+      <button class="sb-nav" id="nav-settings" onclick="showView('settings')">⚙️ Settings</button>
+    </div>
+    <div class="main">
+      <div id="view-group"></div>
+      <div id="view-logs"     style="display:none"></div>
+      <div id="view-settings" style="display:none"></div>
+    </div>
   </div>
 </div>
 
-<!-- TOAST -->
-
-<div id="toast-container"></div>
-
-<!-- ATTENDANCE POPUP -->
-
-<div class="att-popup" id="att-popup"></div>
+<div class="popup" id="popup"></div>
+<div id="toasts"></div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────
-let API_URL    = localStorage.getItem('api_url')    || '';
-let API_SECRET = localStorage.getItem('api_secret') || '';
+// ── CONNECTION — hardcoded, no login needed ───────────────────
+const API_URL    = "https://script.google.com/macros/s/AKfycbyShUIbOiNKFMBZgufFW8uQgq7SLTrTz40ZKWyTjfnhlELN1BVWtt5Xcn1utr4Xhdb7/exec";
+const API_SECRET = "959199767";
 
-const ATTENDANCE_OPTIONS = [
-  { label: "Present + Full HW",      color: "#00b050", cls: "att-present" },
-  { label: "Present + Not Full H/W", color: "#ffc000", cls: "att-partial" },
-  { label: "Absent / No Show",       color: "#ff3333", cls: "att-absent"  },
+const OPTS = [
+  { label: "Present + Full HW",      color: "#00b050", cls: "att-g", short: "✓ Full HW" },
+  { label: "Present + Not Full H/W", color: "#e6ac00", cls: "att-y", short: "~ Partial"  },
+  { label: "Absent / No Show",       color: "#e03333", cls: "att-r", short: "✗ Absent"   },
 ];
 
-// ── STATE ────────────────────────────────────────────────────
-let state = {
-  groups:        {},
-  settings:      {},
-  currentGroup:  null,
-  currentDateCol: null,
-  currentView:   'group',
-};
+let G = {}, S = {}, currentGroup = null, currentCol = null, popCtx = {};
 
-// ── INIT ─────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  if (!API_URL || !API_SECRET) {
-    showSetup();
-  } else {
-    loadData();
-  }
-});
+// ── BOOT ─────────────────────────────────────────────────────
+window.onload = () => loadData();
 
-function showSetup() {
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('setup-screen').style.display = 'flex';
-  document.getElementById('app').classList.remove('visible');
-}
-
-function saveConfig() {
-  const url    = document.getElementById('setup-url').value.trim();
-  const secret = document.getElementById('setup-secret').value.trim();
-  if (!url || !secret) { toast('Enter URL and secret key', 'error'); return; }
-  API_URL    = url;
-  API_SECRET = secret;
-  localStorage.setItem('api_url',    url);
-  localStorage.setItem('api_secret', secret);
-  document.getElementById('setup-screen').style.display = 'none';
-  document.getElementById('loading').style.display = 'flex';
-  loadData();
-}
-
-function clearConfig() {
-  if (!confirm('Disconnect from Google Sheet?')) return;
-  localStorage.removeItem('api_url');
-  localStorage.removeItem('api_secret');
-  location.reload();
-}
-
-// ── API ──────────────────────────────────────────────────────
-async function apiGet(action) {
-  const url = `${API_URL}?secret=${encodeURIComponent(API_SECRET)}&action=${action}`;
-  const res = await fetch(url);
-  return res.json();
-}
-
-async function apiPost(body) {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...body, secret: API_SECRET })
+// ── API — GET only, no CORS issues ───────────────────────────
+function api(params) {
+  const qs  = new URLSearchParams({ secret: API_SECRET, ...params }).toString();
+  return fetch(API_URL + "?" + qs).then(r => {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
   });
-  return res.json();
 }
 
-// ── LOAD DATA ────────────────────────────────────────────────
+// ── LOAD ─────────────────────────────────────────────────────
 async function loadData() {
-  setStatus('loading');
-  setLoading('Loading sheet data…');
+  showOverlay("Connecting to Google Sheet…");
+  setStatus("loading");
   try {
-    const [dataRes, settingsRes] = await Promise.all([
-      apiGet('getAll'),
-      apiGet('getSettings')
+    const [dr, sr] = await Promise.all([
+      api({ action: "getAll" }),
+      api({ action: "getSettings" })
     ]);
-
-    if (dataRes.error || settingsRes.error) {
-      setStatus('error');
-      hideLoading();
-      toast(dataRes.error || settingsRes.error, 'error');
-      showSetup();
-      return;
-    }
-
-    state.groups   = dataRes.groups;
-    state.settings = settingsRes.settings;
-
+    if (dr.error) throw new Error(dr.error);
+    G = dr.groups || {};
+    S = sr.settings || {};
     buildSidebar();
-
-    // Auto-select first group
-    const firstGroup = Object.keys(state.groups)[0];
-    if (firstGroup) selectGroup(firstGroup);
-
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('app').classList.add('visible');
-    setStatus('live');
-    toast('Connected to Google Sheet ✓', 'success');
+    const first = Object.keys(G)[0];
+    if (first) selectGroup(first);
+    hideOverlay();
+    document.getElementById("app").style.display = "block";
+    setStatus("live");
+    toast("Connected ✓", "ok");
   } catch(e) {
-    setStatus('error');
-    hideLoading();
-    toast('Connection failed: ' + e.message, 'error');
-    showSetup();
+    hideOverlay();
+    setStatus("err");
+    document.getElementById("app").style.display = "block";
+    document.getElementById("view-group").innerHTML =
+      `<div style="padding:40px;text-align:center;color:var(--red)">
+        ❌ Could not connect to Google Sheet<br>
+        <span style="color:var(--muted);font-size:12px;margin-top:8px;display:block">${e.message}</span>
+        <br><button class="btn btn-ghost" onclick="loadData()" style="margin-top:12px">↻ Try Again</button>
+      </div>`;
+    toast("Connection failed: " + e.message, "err");
   }
 }
+
+function reload() { currentCol = null; loadData(); }
 
 // ── SIDEBAR ──────────────────────────────────────────────────
 function buildSidebar() {
-  const list = document.getElementById('group-list');
-  list.innerHTML = '';
-  Object.keys(state.groups).forEach(groupName => {
-    const g = state.groups[groupName];
-    const tag = g.type === 'odd' ? 'M/W/F' : 'T/Th/S';
-    const btn = document.createElement('button');
-    btn.className = 'group-btn';
-    btn.id = 'nav-' + groupName.replace(' ','');
-    btn.onclick = () => selectGroup(groupName);
-    btn.innerHTML = `<span>${groupName}</span><span class="group-tag">${tag}</span>`;
-    list.appendChild(btn);
+  const el = document.getElementById("grp-list");
+  el.innerHTML = "";
+  Object.keys(G).forEach(name => {
+    const tag = G[name].type === "odd" ? "M/W/F" : "T/Th/S";
+    const b   = document.createElement("button");
+    b.className = "sb-btn";
+    b.id = "sb-" + name.replace(" ","");
+    b.onclick = () => selectGroup(name);
+    b.innerHTML = `<span>${name}</span><span class="sb-tag">${tag}</span>`;
+    el.appendChild(b);
   });
 }
 
 // ── SELECT GROUP ─────────────────────────────────────────────
-function selectGroup(groupName) {
-  state.currentGroup = groupName;
-  state.currentView  = 'group';
-
-  // Update sidebar active state
-  document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('nav-' + groupName.replace(' ',''));
-  if (btn) btn.classList.add('active');
-  document.querySelectorAll('.sidebar-nav-btn').forEach(b => b.classList.remove('active'));
-
-  showView('group');
-  renderGroupView(groupName);
+function selectGroup(name) {
+  currentGroup = name;
+  currentCol   = null;
+  document.querySelectorAll(".sb-btn").forEach(b => b.classList.remove("active"));
+  const b = document.getElementById("sb-" + name.replace(" ",""));
+  if (b) b.classList.add("active");
+  document.querySelectorAll(".sb-nav").forEach(b => b.classList.remove("active"));
+  showView("group");
+  renderGroup(name);
 }
 
-// ── GROUP VIEW ───────────────────────────────────────────────
-function renderGroupView(groupName) {
-  const g   = state.groups[groupName];
-  const view = document.getElementById('view-group');
+// ── RENDER GROUP ─────────────────────────────────────────────
+function renderGroup(name) {
+  const g = G[name];
+  if (!g) return;
+  const todayNum = String(new Date().getDate());
 
-  // Find today's column
-  const today = new Date();
-  const todayLabel = String(today.getDate());
-
-  // Auto-select most recent or today's date
-  if (!state.currentDateCol && g.dates.length > 0) {
-    // Try to find today
-    let found = g.dates.find(d => {
-      const parts = d.label.split('\n');
-      return parts.length >= 2 && parts[1].trim() === todayLabel;
-    });
-    state.currentDateCol = found ? found.col : g.dates[g.dates.length - 1].col;
+  if (!currentCol) {
+    const td = g.dates.find(d => (d.label.split("\n")[1]||"").trim() === todayNum);
+    currentCol = td ? td.col : (g.dates[g.dates.length-1]?.col || null);
   }
-  if (!state.currentDateCol) state.currentDateCol = g.dates[0]?.col;
 
-  const selCol = state.currentDateCol;
+  const selCol  = currentCol;
   const selDate = g.dates.find(d => d.col === selCol);
-  const dateLabel = selDate ? selDate.label.replace('\n', ' ') : '—';
-
-  // Count stats for selected date
+  const dateLbl = selDate ? selDate.label.replace("\n"," ") : "—";
   const students = g.students;
-  const present = students.filter(s => s.attendance[selCol] === "Present + Full HW").length;
-  const partial = students.filter(s => s.attendance[selCol] === "Present + Not Full H/W").length;
-  const absent  = students.filter(s => s.attendance[selCol] === "Absent / No Show").length;
-  const empty   = students.filter(s => !s.attendance[selCol]).length;
-  const total   = students.length;
 
-  view.innerHTML = `
-    <div class="page-header">
+  const pFull = students.filter(s => s.attendance[selCol] === "Present + Full HW").length;
+  const pPart = students.filter(s => s.attendance[selCol] === "Present + Not Full H/W").length;
+  const abs   = students.filter(s => s.attendance[selCol] === "Absent / No Show").length;
+  const empty = students.filter(s => !s.attendance[selCol]).length;
+
+  const chips = g.dates.map(d => {
+    const parts = d.label.split("\n");
+    const isToday  = (parts[1]||"").trim() === todayNum;
+    const isActive = d.col === selCol;
+    return `<button class="dc${isActive?" active":""}${isToday&&!isActive?" today":""}"
+      onclick="pickDate('${name}',${d.col})">${parts[0]||""}<br><b>${parts[1]||""}</b></button>`;
+  }).join("");
+
+  const rows = students.map((s,i) => {
+    const att = s.attendance[selCol] || "";
+    const opt = OPTS.find(o => o.label === att);
+    return `<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td><span class="sname editable" onclick="editField('${name}',${s.row},this,'name')">${esc(s.name)}</span></td>
+      <td><span class="sphone editable" onclick="editField('${name}',${s.row},this,'phone')">${esc(s.phone||"—")}</span></td>
+      <td style="color:var(--muted);font-size:11px;font-style:italic">${esc(s.notes||"")}</td>
+      <td><button class="att ${opt?opt.cls:"att-e"}"
+        onclick="openPopup(event,'${name}',${s.row},${selCol},this)">${opt?opt.short:"— empty"}</button></td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("view-group").innerHTML = `
+    <div class="ph">
       <div>
-        <div class="page-title">${groupName}</div>
-        <div class="page-subtitle">${g.header || ''}</div>
+        <div class="ph-title">${name}</div>
+        <div class="ph-sub">${g.type==="odd"?"Mon · Wed · Fri":"Tue · Thu · Sat"}</div>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-success" onclick="openSendPanel('${groupName}')">
-          ▶ Send Notifications
-        </button>
-      </div>
+      <button class="btn btn-green" onclick="toggleSend()">▶ Send Notifications</button>
     </div>
 
-    <!-- SEND PANEL (hidden by default) -->
-    <div class="send-panel" id="send-panel" style="display:none;">
-      <h3>📨 Send Notifications — ${groupName}</h3>
+    <div class="send-panel" id="send-panel" style="display:none">
       <div class="send-row">
-        <div class="send-info">
-          Date: <span class="send-stat">${dateLabel}</span> &nbsp;|&nbsp;
-          <span class="att-badge att-present" style="cursor:default">✓ ${present}</span> &nbsp;
-          <span class="att-badge att-partial" style="cursor:default">~ ${partial}</span> &nbsp;
-          <span class="att-badge att-absent"  style="cursor:default">✗ ${absent}</span> &nbsp;
-          <span style="color:var(--muted)">empty: ${empty}</span>
+        <div class="send-stats">
+          <span style="color:var(--muted);font-size:12px">📅 <b style="color:var(--text)">${dateLbl}</b></span>
+          <span class="sc sc-g">✓ ${pFull}</span>
+          <span class="sc sc-y">~ ${pPart}</span>
+          <span class="sc sc-r">✗ ${abs}</span>
+          <span class="sc sc-e">? ${empty}</span>
         </div>
-        <button class="btn btn-success" id="send-btn" onclick="sendGroup('${groupName}', ${selCol}, '${dateLabel}')">
-          ▶ Send ${total - empty} Messages
+        <button class="btn btn-green" id="send-btn"
+          onclick="doSend('${name}',${selCol},'${dateLbl}')">
+          ▶ Send ${students.length - empty} msgs
         </button>
-        <button class="btn btn-ghost" onclick="closeSendPanel()">✕</button>
+        <button class="btn btn-ghost" onclick="toggleSend()">✕</button>
       </div>
-      <div id="send-result" style="margin-top:12px;font-size:12px;color:var(--muted);"></div>
+      <div id="send-result"></div>
     </div>
 
-    <!-- DATE CHIPS -->
-    <div class="date-bar">
-      ${g.dates.map(d => {
-        const parts = d.label.split('\n');
-        const dayName = parts[0] || '';
-        const dayNum  = parts[1] || '';
-        const isToday = dayNum.trim() === todayLabel;
-        const isActive = d.col === selCol;
-        return `<button class="date-chip${isActive?' active':''}${isToday&&!isActive?' today':''}"
-          onclick="selectDate('${groupName}', ${d.col})">
-          ${dayName}<br><strong>${dayNum}</strong>
-        </button>`;
-      }).join('')}
-    </div>
+    <div class="date-bar">${chips}</div>
 
-    <!-- STUDENT TABLE -->
-    <div class="table-wrap">
+    <div class="tbl-wrap">
       <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Full Name</th>
-            <th>Phone</th>
-            <th>Notes</th>
-            <th>${dateLabel}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${students.map((s, i) => {
-            const att = s.attendance[selCol] || '';
-            const badgeCls = att === "Present + Full HW" ? 'att-present'
-              : att === "Present + Not Full H/W" ? 'att-partial'
-              : att === "Absent / No Show" ? 'att-absent' : 'att-empty';
-            const badgeText = att === "Present + Full HW" ? '✓ Full HW'
-              : att === "Present + Not Full H/W" ? '~ Partial'
-              : att === "Absent / No Show" ? '✗ Absent' : '— empty';
-            return `<tr>
-              <td style="color:var(--muted)">${i+1}</td>
-              <td>
-                <div class="student-name editable" onclick="editName('${groupName}', ${s.row}, this)">${s.name}</div>
-              </td>
-              <td>
-                <div class="student-phone editable" onclick="editPhone('${groupName}', ${s.row}, this)">${s.phone || '—'}</div>
-              </td>
-              <td><div class="student-notes">${s.notes || ''}</div></td>
-              <td>
-                <button class="att-badge ${badgeCls}"
-                  onclick="openAttPopup(event, '${groupName}', ${s.row}, ${selCol}, this)">
-                  ${badgeText}
-                </button>
-              </td>
-            </tr>`;
-          }).join('')}
-        </tbody>
+        <thead><tr>
+          <th>#</th><th>Full Name</th><th>Phone</th><th>Notes</th><th>${dateLbl}</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
       </table>
-    </div>
-  `;
+    </div>`;
 }
 
-// ── DATE SELECT ──────────────────────────────────────────────
-function selectDate(groupName, col) {
-  state.currentDateCol = col;
-  renderGroupView(groupName);
+function pickDate(name, col) { currentCol = col; renderGroup(name); }
+
+function toggleSend() {
+  const p = document.getElementById("send-panel");
+  if (p) p.style.display = p.style.display === "none" ? "block" : "none";
 }
 
-// ── SEND PANEL ───────────────────────────────────────────────
-function openSendPanel(groupName) {
-  const panel = document.getElementById('send-panel');
-  if (panel) panel.style.display = 'block';
-}
-function closeSendPanel() {
-  const panel = document.getElementById('send-panel');
-  if (panel) panel.style.display = 'none';
-}
-
-async function sendGroup(groupName, col, dateLabel) {
-  const btn = document.getElementById('send-btn');
+// ── SEND ─────────────────────────────────────────────────────
+async function doSend(name, col, dateLbl) {
+  const btn = document.getElementById("send-btn");
+  const res_div = document.getElementById("send-result");
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Sending…';
-
-  const resultDiv = document.getElementById('send-result');
-  resultDiv.innerHTML = 'Sending messages…';
-
+  btn.innerHTML = '<span class="sp-sm"></span> Sending…';
+  res_div.innerHTML = "";
   try {
-    const res = await apiPost({
-      action: 'sendGroup',
-      group:  groupName,
-      col:    col,
-      dateLabel: dateLabel
-    });
-
-    if (res.error) {
-      resultDiv.innerHTML = `<span style="color:var(--red)">❌ ${res.error}</span>`;
-      toast(res.error, 'error');
-    } else {
-      resultDiv.innerHTML = `<span style="color:var(--green)">✅ Sent: ${res.sent} messages | Skipped: ${res.skipped}</span>`;
-      toast(`✅ ${res.sent} messages sent!`, 'success');
-    }
+    const res = await api({ action:"sendGroup", group:name, col, dateLabel:dateLbl });
+    if (res.error) throw new Error(res.error);
+    res_div.innerHTML = `<span style="color:var(--green)">✅ Sent: ${res.sent} | Skipped: ${res.skipped}</span>`;
+    toast(`✅ ${res.sent} messages sent!`, "ok");
   } catch(e) {
-    resultDiv.innerHTML = `<span style="color:var(--red)">❌ ${e.message}</span>`;
-    toast('Send failed: ' + e.message, 'error');
+    res_div.innerHTML = `<span style="color:var(--red)">❌ ${e.message}</span>`;
+    toast("Send failed: " + e.message, "err");
   }
-
   btn.disabled = false;
-  btn.innerHTML = '▶ Send Messages';
+  btn.innerHTML = "▶ Send";
 }
 
 // ── ATTENDANCE POPUP ─────────────────────────────────────────
-let popupState = {};
-
-function openAttPopup(event, groupName, row, col, triggerEl) {
+function openPopup(event, grp, row, col, el) {
   event.stopPropagation();
-  popupState = { groupName, row, col, triggerEl };
-
-  const popup = document.getElementById('att-popup');
-  popup.innerHTML = ATTENDANCE_OPTIONS.map(opt =>
-    `<button class="att-option" style="background:${opt.color}"
-      onclick="setAttendance('${opt.label.replace(/'/g,"\\'")}')">
-      ${opt.label}
-    </button>`
-  ).join('') +
-  `<button class="att-option opt-clear" onclick="setAttendance('')">✕ Clear</button>`;
-
-  // Position popup near click
-  const rect = triggerEl.getBoundingClientRect();
-  popup.style.left = Math.min(rect.left, window.innerWidth - 240) + 'px';
-  popup.style.top  = (rect.bottom + 6) + 'px';
-  popup.classList.add('show');
+  popCtx = { grp, row, col, el };
+  const popup = document.getElementById("popup");
+  popup.innerHTML = OPTS.map(o =>
+    `<button class="pop-opt" style="background:${o.color}"
+      onclick="setAtt('${o.label.replace(/'/g,"\\'")}')"> ${o.label}</button>`
+  ).join("") +
+  `<button class="pop-opt pop-clear" onclick="setAtt('')">✕ Clear</button>`;
+  const r = el.getBoundingClientRect();
+  popup.style.left = Math.min(r.left, window.innerWidth - 250) + "px";
+  popup.style.top  = (r.bottom + 5) + "px";
+  popup.classList.add("show");
 }
 
-document.addEventListener('click', () => {
-  document.getElementById('att-popup').classList.remove('show');
-});
+document.addEventListener("click", () => document.getElementById("popup").classList.remove("show"));
 
-async function setAttendance(value) {
-  const { groupName, row, col, triggerEl } = popupState;
-  document.getElementById('att-popup').classList.remove('show');
-
-  // Optimistic UI update
-  const badgeCls = value === "Present + Full HW" ? 'att-present'
-    : value === "Present + Not Full H/W" ? 'att-partial'
-    : value === "Absent / No Show" ? 'att-absent' : 'att-empty';
-  const badgeText = value === "Present + Full HW" ? '✓ Full HW'
-    : value === "Present + Not Full H/W" ? '~ Partial'
-    : value === "Absent / No Show" ? '✗ Absent' : '— empty';
-
-  triggerEl.className = `att-badge ${badgeCls}`;
-  triggerEl.textContent = badgeText;
-  triggerEl.onclick = (e) => openAttPopup(e, groupName, row, col, triggerEl);
-
-  // Update state
-  if (!state.groups[groupName]) return;
-  const student = state.groups[groupName].students.find(s => s.row === row);
-  if (student) student.attendance[col] = value;
-
-  // Send to sheet
+async function setAtt(val) {
+  document.getElementById("popup").classList.remove("show");
+  const { grp, row, col, el } = popCtx;
+  const opt = OPTS.find(o => o.label === val);
+  el.className = "att " + (opt ? opt.cls : "att-e");
+  el.textContent = opt ? opt.short : "— empty";
+  el.onclick = (e) => openPopup(e, grp, row, col, el);
+  const student = G[grp]?.students.find(s => s.row === row);
+  if (student) student.attendance[col] = val;
   try {
-    await apiPost({ action: 'updateAttendance', group: groupName, row, col, value });
-  } catch(e) {
-    toast('Save failed: ' + e.message, 'error');
-  }
+    await api({ action:"updateAttendance", group:grp, row, col, value:val });
+  } catch(e) { toast("Save failed", "err"); }
 }
 
 // ── INLINE EDIT ──────────────────────────────────────────────
-function editField(groupName, row, el, field) {
-  const current = el.textContent === '—' ? '' : el.textContent;
-  const input = document.createElement('input');
-  input.className = 'inline-input';
-  input.value = current;
-  el.replaceWith(input);
-  input.focus();
-
+function editField(grp, row, el, field) {
+  const cur = el.textContent === "—" ? "" : el.textContent;
+  const inp = document.createElement("input");
+  inp.className = "inline-inp";
+  inp.value = cur;
+  el.replaceWith(inp);
+  inp.focus();
   const save = async () => {
-    const val = input.value.trim();
-    const newEl = document.createElement('div');
-    newEl.className = el.className;
-    newEl.textContent = val || '—';
-    newEl.onclick = () => editField(groupName, row, newEl, field);
-    input.replaceWith(newEl);
-
-    // Update state
-    const student = state.groups[groupName]?.students.find(s => s.row === row);
+    const val = inp.value.trim();
+    const ne  = document.createElement("span");
+    ne.className = el.className;
+    ne.textContent = val || "—";
+    ne.onclick = () => editField(grp, row, ne, field);
+    inp.replaceWith(ne);
+    const student = G[grp]?.students.find(s => s.row === row);
     if (student) student[field] = val;
-
-    try {
-      await apiPost({ action: 'updateStudent', group: groupName, row, [field]: val });
-    } catch(e) {
-      toast('Save failed', 'error');
-    }
+    try { await api({ action:"updateStudent", group:grp, row, [field]:val }); }
+    catch(e) { toast("Save failed","err"); }
   };
-
-  input.addEventListener('blur', save);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') { input.value = current; input.blur(); } });
+  inp.addEventListener("blur", save);
+  inp.addEventListener("keydown", e => {
+    if (e.key==="Enter") inp.blur();
+    if (e.key==="Escape"){ inp.value=cur; inp.blur(); }
+  });
 }
 
-function editName(groupName, row, el)  { editField(groupName, row, el, 'name'); }
-function editPhone(groupName, row, el) { editField(groupName, row, el, 'phone'); }
-
-// ── LOGS VIEW ────────────────────────────────────────────────
-async function renderLogsView() {
-  const view = document.getElementById('view-logs');
-  view.innerHTML = `<div class="page-header"><div><div class="page-title">Send Logs</div><div class="page-subtitle">Last 20 notification batches</div></div></div><p style="color:var(--muted)">Loading…</p>`;
-
+// ── LOGS ─────────────────────────────────────────────────────
+async function renderLogs() {
+  const view = document.getElementById("view-logs");
+  view.innerHTML = `<div class="ph"><div><div class="ph-title">Send Logs</div><div class="ph-sub">Last 20 batches</div></div></div><p style="color:var(--muted)">Loading…</p>`;
   try {
-    const res = await apiGet('getLogs');
-    if (!res.logs || res.logs.length === 0) {
-      view.innerHTML += '<p style="color:var(--muted);margin-top:20px;">No logs yet. Send some notifications first.</p>';
-      return;
-    }
-    const logsHtml = res.logs.map(log => {
-      const items = (log.log || []).map(l => {
-        const cls = l.attendance === "Present + Full HW" ? 'att-present'
-          : l.attendance === "Present + Not Full H/W" ? 'att-partial'
-          : l.attendance === "Absent / No Show" ? 'att-absent' : '';
-        return `<span class="log-item att-badge ${cls}" style="cursor:default">${l.name}</span>`;
-      }).join('');
-      const time = log.time ? new Date(log.time).toLocaleString() : '';
-      return `<div class="log-entry">
-        <div class="log-header">
-          <span class="log-group">${log.group}</span>
+    const res = await api({ action:"getLogs" });
+    const logs = res.logs || [];
+    if (!logs.length) { view.querySelector("p").textContent = "No logs yet — send some notifications first."; return; }
+    const html = logs.map(log => {
+      const time  = log.time ? new Date(log.time).toLocaleString() : "";
+      const items = (log.log||[]).map(l => {
+        const opt = OPTS.find(o => o.label === l.attendance);
+        return `<span class="att ${opt?opt.cls:"att-e"}" style="cursor:default;font-size:11px">${esc(l.name)}</span>`;
+      }).join("");
+      return `<div class="log-card">
+        <div class="log-head">
+          <span class="log-grp">${log.group}</span>
           <span class="log-date">${log.date}</span>
           <span class="log-time">${time}</span>
         </div>
-        <div class="log-rows">${items || '<span style="color:var(--muted);font-size:12px">No entries</span>'}</div>
+        <div class="log-body">${items||'<span style="color:var(--muted);font-size:12px">Empty batch</span>'}</div>
       </div>`;
-    }).join('');
-    view.innerHTML = `<div class="page-header"><div><div class="page-title">Send Logs</div><div class="page-subtitle">Last 20 notification batches</div></div></div>${logsHtml}`;
+    }).join("");
+    view.innerHTML = `<div class="ph"><div><div class="ph-title">Send Logs</div><div class="ph-sub">Last 20 batches</div></div></div>${html}`;
   } catch(e) {
     view.innerHTML += `<p style="color:var(--red)">Error: ${e.message}</p>`;
   }
 }
 
-// ── SETTINGS VIEW ────────────────────────────────────────────
-function renderSettingsView() {
-  const s = state.settings;
-  const view = document.getElementById('view-settings');
-  view.innerHTML = `
-    <div class="page-header">
-      <div><div class="page-title">Settings</div><div class="page-subtitle">Changes sync to Google Sheet</div></div>
-    </div>
-    <div class="settings-grid">
-      <div class="settings-section">
+// ── SETTINGS ─────────────────────────────────────────────────
+function renderSettings() {
+  const s = S;
+  document.getElementById("view-settings").innerHTML = `
+    <div class="ph"><div><div class="ph-title">Settings</div><div class="ph-sub">Syncs directly to Google Sheet</div></div></div>
+    <div class="set-grid">
+      <div class="set-sec">
         <h3>📱 SMS Gate</h3>
-        <div class="setting-row"><label>URL</label><input id="s-smsUrl" value="${s.smsGateUrl||''}"></div>
-        <div class="setting-row"><label>Login</label><input id="s-smsLogin" value="${s.smsGateLogin||''}"></div>
-        <div class="setting-row"><label>Password</label><input id="s-smsPwd" type="password" value="${s.smsGatePassword||''}"></div>
-        <div class="setting-row"><label>SIM Slot</label><input id="s-simSlot" value="${s.smsSimSlot||'1'}" style="width:60px"></div>
-        <button class="btn btn-primary" onclick="saveSMSSettings()">Save SMS Settings</button>
+        <div class="set-row"><label>URL</label><input id="s-url" value="${esc(s.smsGateUrl||"")}"></div>
+        <div class="set-row"><label>Login</label><input id="s-log" value="${esc(s.smsGateLogin||"")}"></div>
+        <div class="set-row"><label>Password</label><input id="s-pwd" type="password" value="${esc(s.smsGatePassword||"")}"></div>
+        <div class="set-row"><label>SIM Slot</label><input id="s-sim" value="${esc(s.smsSimSlot||"1")}" style="width:50px"></div>
+        <button class="btn btn-blue" style="margin-top:4px" onclick="saveSMS()">Save SMS</button>
       </div>
-      <div class="settings-section">
+      <div class="set-sec">
         <h3>✈️ Telegram</h3>
-        <div class="setting-row"><label>Bot Token</label><input id="s-token" value="${s.botToken||''}"></div>
-        ${(s.chatIds||[]).map((c,i) =>
-          `<div class="setting-row"><label>${c.group}</label><input id="s-chat-${i}" value="${c.chatId||''}"></div>`
-        ).join('')}
-        <button class="btn btn-primary" onclick="saveTelegramSettings()">Save Telegram Settings</button>
+        <div class="set-row"><label>Bot Token</label><input id="s-tok" value="${esc(s.botToken||"")}"></div>
+        ${(s.chatIds||[]).map((c,i)=>`
+          <div class="set-row"><label>${c.group}</label><input id="s-cid-${i}" value="${esc(c.chatId||"")}"></div>
+        `).join("")}
+        <button class="btn btn-blue" style="margin-top:4px" onclick="saveTG()">Save Telegram</button>
       </div>
-      <div class="settings-section" style="grid-column:1/-1">
+      <div class="set-sec" style="grid-column:1/-1">
         <h3>💬 Message Templates</h3>
-        <p style="color:var(--muted);font-size:11px;margin-bottom:16px;">Use <code style="color:var(--accent)">{name}</code> and <code style="color:var(--accent)">{date}</code> as placeholders.</p>
-        ${Object.entries(s.messages||{}).map(([key, val]) => {
-          const id = 'msg-' + key.replace(/[^a-z]/gi,'');
-          return `<div class="field" style="margin-bottom:12px">
-            <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:6px">${key}</label>
-            <input id="${id}" value="${val}" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none">
-          </div>`;
-        }).join('')}
-        <button class="btn btn-primary" onclick="saveMessageTemplates()">Save Messages</button>
+        <p style="color:var(--muted);font-size:11px;margin-bottom:14px">Use <code style="color:var(--accent)">{name}</code> and <code style="color:var(--accent)">{date}</code> as placeholders</p>
+        ${Object.entries(s.messages||{}).map(([key,val])=>`
+          <div class="field">
+            <label>${key}</label>
+            <input id="msg-${key.replace(/[^a-z0-9]/gi,'_')}" value="${esc(val)}">
+          </div>
+        `).join("")}
+        <button class="btn btn-blue" onclick="saveMsgs()">Save Messages</button>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
-async function saveSMSSettings() {
-  await Promise.all([
-    apiPost({ action:'updateSetting', key:'SMS Gate URL',      value: document.getElementById('s-smsUrl').value }),
-    apiPost({ action:'updateSetting', key:'SMS Gate Login',    value: document.getElementById('s-smsLogin').value }),
-    apiPost({ action:'updateSetting', key:'SMS Gate Password', value: document.getElementById('s-smsPwd').value }),
-    apiPost({ action:'updateSetting', key:'SMS SIM Slot',      value: document.getElementById('s-simSlot').value }),
-  ]);
-  toast('SMS settings saved ✓', 'success');
+async function saveSMS() {
+  try {
+    await Promise.all([
+      api({ action:"updateSetting", key:"SMS Gate URL",      value: v("s-url") }),
+      api({ action:"updateSetting", key:"SMS Gate Login",    value: v("s-log") }),
+      api({ action:"updateSetting", key:"SMS Gate Password", value: v("s-pwd") }),
+      api({ action:"updateSetting", key:"SMS SIM Slot",      value: v("s-sim") }),
+    ]);
+    toast("SMS settings saved ✓","ok");
+  } catch(e) { toast("Error: "+e.message,"err"); }
 }
 
-async function saveTelegramSettings() {
-  const chatIds = state.settings.chatIds || [];
-  await apiPost({ action:'updateSetting', key:'Bot Token', value: document.getElementById('s-token').value });
-  await Promise.all(chatIds.map((c, i) =>
-    apiPost({ action:'updateSetting', key: c.group + ' Chat ID', value: document.getElementById('s-chat-'+i).value })
-  ));
-  toast('Telegram settings saved ✓', 'success');
+async function saveTG() {
+  try {
+    await api({ action:"updateSetting", key:"Bot Token", value: v("s-tok") });
+    await Promise.all((S.chatIds||[]).map((c,i) =>
+      api({ action:"updateSetting", key: c.group+" Chat ID", value: v("s-cid-"+i) })
+    ));
+    toast("Telegram settings saved ✓","ok");
+  } catch(e) { toast("Error: "+e.message,"err"); }
 }
 
-async function saveMessageTemplates() {
-  const msgs = state.settings.messages || {};
-  await Promise.all(Object.keys(msgs).map(key => {
-    const id  = 'msg-' + key.replace(/[^a-z]/gi,'');
-    const val = document.getElementById(id)?.value || msgs[key];
-    return apiPost({ action:'updateSetting', key:'Msg: '+key, value: val });
-  }));
-  toast('Message templates saved ✓', 'success');
+async function saveMsgs() {
+  try {
+    await Promise.all(Object.keys(S.messages||{}).map(key => {
+      const id  = "msg-" + key.replace(/[^a-z0-9]/gi,"_");
+      const val = document.getElementById(id)?.value || S.messages[key];
+      return api({ action:"updateSetting", key:"Msg: "+key, value: val });
+    }));
+    toast("Messages saved ✓","ok");
+  } catch(e) { toast("Error: "+e.message,"err"); }
 }
 
-// ── SHOW VIEW ────────────────────────────────────────────────
-function showView(view) {
-  document.getElementById('view-group').style.display    = view === 'group'    ? 'block' : 'none';
-  document.getElementById('view-logs').style.display     = view === 'logs'     ? 'block' : 'none';
-  document.getElementById('view-settings').style.display = view === 'settings' ? 'block' : 'none';
-
-  document.querySelectorAll('.sidebar-nav-btn').forEach(b => b.classList.remove('active'));
-
-  if (view === 'logs')     { document.getElementById('nav-logs').classList.add('active');     renderLogsView(); }
-  if (view === 'settings') { document.getElementById('nav-settings').classList.add('active'); renderSettingsView(); }
-  if (view === 'group')    { document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active')); }
+// ── VIEWS ────────────────────────────────────────────────────
+function showView(name) {
+  document.getElementById("view-group").style.display    = name==="group"    ? "block":"none";
+  document.getElementById("view-logs").style.display     = name==="logs"     ? "block":"none";
+  document.getElementById("view-settings").style.display = name==="settings" ? "block":"none";
+  document.querySelectorAll(".sb-nav").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".sb-btn").forEach(b => { if(name!=="group") b.classList.remove("active"); });
+  if (name==="logs")     { document.getElementById("nav-logs").classList.add("active");     renderLogs(); }
+  if (name==="settings") { document.getElementById("nav-settings").classList.add("active"); renderSettings(); }
 }
 
-// ── STATUS ───────────────────────────────────────────────────
+// ── UTILS ────────────────────────────────────────────────────
 function setStatus(s) {
-  const dot  = document.getElementById('status-dot');
-  const text = document.getElementById('status-text');
-  if (s === 'live')    { dot.className='dot live'; text.textContent='Live'; }
-  if (s === 'loading') { dot.className='dot'; text.textContent='Syncing…'; }
-  if (s === 'error')   { dot.className='dot'; dot.style.background='var(--red)'; text.textContent='Disconnected'; }
+  const dot = document.getElementById("dot");
+  const txt = document.getElementById("status-txt");
+  dot.className = "live-dot" + (s==="live"?" on": s==="err"?" err":"");
+  txt.textContent = s==="live"?"Live": s==="loading"?"Syncing…":"Connection error";
 }
-
-function setLoading(msg) {
-  document.getElementById('loading').style.display = 'flex';
-  document.getElementById('loading-text').textContent = msg;
+function showOverlay(msg) {
+  document.getElementById("overlay").style.display="flex";
+  document.getElementById("overlay-txt").textContent = msg;
 }
-function hideLoading() {
-  document.getElementById('loading').style.display = 'none';
-}
-
-// ── TOAST ────────────────────────────────────────────────────
-function toast(msg, type='info') {
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.textContent = msg;
-  document.getElementById('toast-container').appendChild(el);
-  setTimeout(() => el.remove(), 3500);
+function hideOverlay() { document.getElementById("overlay").style.display="none"; }
+function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function v(id)  { return document.getElementById(id)?.value||""; }
+function toast(msg, type="inf") {
+  const el = document.createElement("div");
+  el.className = "toast "+type; el.textContent = msg;
+  document.getElementById("toasts").appendChild(el);
+  setTimeout(()=>el.remove(), 3200);
 }
 </script>
 
